@@ -1,77 +1,97 @@
-// src/page/landing.js
+import "../styles/landing.css";
 
 export class Landing {
 
     static async start() {
 
-        document.body.innerHTML = `
-        <div class="landing">
+        const app = document.getElementById("reader-container");
+
+        app.innerHTML = `
+        <main class="landing">
 
         <header class="landing-header">
 
-        <h1>MON Website</h1>
+        <div class="landing-logo">
+        AnimePlex
+        </div>
 
-        <p class="landing-tagline">
-        Read what the world forgot.
-        </p>
+        <nav class="landing-nav">
+
+        <button>Library</button>
+        <button>History</button>
+        <button>Favorites</button>
+        <button>Downloads</button>
+        <button>Settings</button>
+
+        </nav>
+
+        <div class="landing-search">
+
+        <input
+        type="text"
+        placeholder="Search works..."
+        >
+
+        </div>
+
+
+
+
+        <div class="landing-profile">
+
+        Profile
+
+        </div>
 
         </header>
 
+        <section class="landing-featured">
+
+        <div class="featured-info">
+
+        <span>FEATURED</span>
+
+        <h1>Title</h1>
+
+        <p>Description</p>
+
+        </div>
+
+        </section>
+
         <section class="landing-rotunda">
 
-        <div id="rotunda">
-
-        Rotunda
-
-        </div>
-
         </section>
 
-        <section class="landing-search">
+        <section class="landing-continue">
 
-        <div id="search">
-
-        Search
-
-        </div>
-
-        </section>
-
-        <section class="landing-layout">
-
-        <aside class="landing-sidebar left">
-
-        <div class="sidebar-card">
-
-        Left Banner
-
-        </div>
+        <aside class="continue-left">
 
         </aside>
 
-        <main class="landing-main">
-
-        <div id="blocks">
-
-        Landing Blocks
-
-        </div>
+        <main class="continue-center">
 
         </main>
 
-        <aside class="landing-sidebar right">
-
-        <div class="sidebar-card">
-
-        Right Banner
-
-        </div>
+        <aside class="continue-right">
 
         </aside>
 
         </section>
 
-        </div>
+        <section class="landing-latest">
+
+        </section>
+
+        <section class="landing-popular">
+
+        </section>
+
+        <footer class="landing-footer">
+
+        </footer>
+
+        </main>
         `;
 
     }

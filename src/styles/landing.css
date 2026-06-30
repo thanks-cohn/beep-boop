@@ -1,160 +1,235 @@
-\
-:root {
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
 
-    --page-width: 1700px;
+:root{
 
-    --sidebar-width: 220px;
-
-    --surface: #181818;
-
-    --surface-2: #242424;
-
-    --border: #353535;
-
-    --text: #f5f5f5;
+    --bg:#090909;
+    --panel:#111111;
+    --border:#222222;
+    --text:#f5f5f5;
+    --muted:#9d9d9d;
+    --accent:#3b82f6;
 
 }
 
-body {
+body{
 
-    margin: 0;
+    background:var(--bg);
+    color:var(--text);
 
-    background: #101010;
+    font-family:Inter,system-ui,sans-serif;
+}
 
-    color: var(--text);
+button{
 
-    font-family: system-ui, sans-serif;
+    background:none;
+    border:none;
+    color:inherit;
+    font:inherit;
+    cursor:pointer;
+}
+
+.landing{
+
+    display:flex;
+    flex-direction:column;
+
+    min-height:100vh;
+}
+
+
+
+/* ===================== HEADER ===================== */
+
+.landing-header{
+
+    display:grid;
+
+    grid-template-columns:
+        260px
+        1fr
+        320px
+        90px;
+
+    align-items:center;
+
+    gap:32px;
+
+    height:72px;
+
+    padding:0 36px;
+
+    border-bottom:1px solid var(--border);
 
 }
 
-.landing {
+.landing-logo{
 
-    max-width: var(--page-width);
-
-    margin: auto;
-
-    padding: 24px;
-
+    font-size:3rem;
+    font-weight:800;
 }
 
-.landing-header {
+.landing-nav{
 
-    text-align: center;
-
-    margin-bottom: 32px;
-
+    display:flex;
+    justify-content:center;
+    gap:18px;
 }
 
-.landing-tagline {
+.landing-nav button{
 
-    opacity: .7;
+    padding:10px 18px;
 
+    border-radius:12px;
+
+    transition:.2s;
 }
 
-.landing-rotunda {
+.landing-nav button:hover{
 
-    min-height: 220px;
-
-    border: 1px solid var(--border);
-
-    border-radius: 14px;
-
-    background: var(--surface);
-
-    margin-bottom: 24px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
+    background:#181818;
 }
 
-.landing-search {
+.landing-search{
 
-    min-height: 72px;
-
-    border: 1px solid var(--border);
-
-    border-radius: 14px;
-
-    background: var(--surface);
-
-    margin-bottom: 24px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
+    width:100%;
 }
 
-.landing-layout {
+.landing-search input{
 
-    display: grid;
+    width:100%;
 
-    grid-template-columns: var(--sidebar-width) 1fr var(--sidebar-width);
+    height:42px;
 
-    gap: 24px;
+    border:none;
 
+    outline:none;
+
+    border-radius:24px;
+
+    background:#161616;
+
+    color:white;
+
+    padding:0 18px;
 }
 
-.landing-sidebar {
+.landing-profile{
 
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 18px;
-
+    text-align:right;
 }
 
-.sidebar-card {
 
-    min-height: 600px;
 
-    border-radius: 14px;
+/* ===================== FEATURED ===================== */
 
-    border: 1px solid var(--border);
+.landing-featured{
 
-    background: var(--surface);
+    display:flex;
 
-    display: flex;
+    justify-content:center;
 
-    align-items: center;
+    align-items:center;
 
-    justify-content: center;
+    min-height:170px;
 
+    text-align:center;
 }
 
-.landing-main {
+.featured-info{
 
-    border-radius: 14px;
+    display:flex;
 
-    border: 1px solid var(--border);
+    flex-direction:column;
 
-    background: var(--surface);
-
-    min-height: 900px;
-
-    padding: 24px;
-
+    gap:14px;
 }
 
-@media (max-width: 1100px) {
+.featured-info span{
 
-    .landing-layout {
+    color:var(--accent);
 
-        grid-template-columns: 1fr;
+    letter-spacing:2px;
 
-    }
+    font-weight:700;
+}
 
-    .landing-sidebar {
+.featured-info h1{
 
-        display: none;
+    font-size:4rem;
+}
 
-    }
+.featured-info p{
 
+    color:var(--muted);
+}
+
+
+
+/* ===================== ROTUNDA ===================== */
+
+.landing-rotunda{
+
+    height:560px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    position:relative;
+
+    overflow:hidden;
+
+    border-top:1px solid var(--border);
+
+    border-bottom:1px solid var(--border);
+
+    background:
+        radial-gradient(circle at center,#111 0%,#090909 70%);
+}
+
+.landing-rotunda::before{
+
+    content:"ROTUNDA GOES HERE";
+
+    color:#555;
+
+    font-size:2rem;
+
+    letter-spacing:6px;
+}
+
+
+
+/* ===================== CONTINUE ===================== */
+
+.landing-continue{
+
+    display:grid;
+
+    grid-template-columns:
+        320px
+        1fr
+        220px;
+
+    gap:24px;
+
+    min-height:420px;
+
+    padding:40px;
+}
+
+
+
+/* ===================== SECTIONS ===================== */
+
+.landing-latest,
+.landing-popular{
+
+    padding:64px;
 }
