@@ -1,23 +1,20 @@
 export class Reader {
 
-    static async start(workSlug, chapter) {
+    static async start(work, chapter) {
 
-        console.log("Reader initialized.");
-
-        const container = document.getElementById("reader-container");
-
-        if (!container) {
-            throw new Error("Missing #reader-container");
-        }
+        const container =
+            document.getElementById("reader-container");
 
         container.innerHTML = `
-            <div class="reader">
 
-                <h2>${workSlug}</h2>
+            <section class="reader">
+
+                <h2>${work}</h2>
 
                 <p>${chapter}</p>
 
-            </div>
+            </section>
+
         `;
 
     }
