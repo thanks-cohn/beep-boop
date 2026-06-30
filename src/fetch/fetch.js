@@ -1,5 +1,7 @@
 // src/fetch/fetch.js
 
+import { Storage } from "../storage/storage.js";
+
 const FETCH_FILE = "/src/data/fetch.json";
 
 export class Fetch {
@@ -13,7 +15,9 @@ export class Fetch {
         }
 
         const response = await fetch(FETCH_FILE, {
+
             cache: "no-store"
+
         });
 
         if (!response.ok) {
@@ -23,6 +27,7 @@ export class Fetch {
         this.#cache = await response.json();
 
         return this.#cache;
+
     }
 
     static async works() {
@@ -30,13 +35,15 @@ export class Fetch {
         const data = await this.load();
 
         return data.works ?? [];
+
     }
 
     static async work(slug) {
 
         const works = await this.works();
 
-        return works.find(w => w.slug === slug) ?? null;
+        return works.find(work => work.slug === slug) ?? null;
+
     }
 
     static async chapter(workSlug, chapterPath) {
@@ -47,19 +54,18 @@ export class Fetch {
             throw new Error(`Unknown work "${workSlug}"`);
         }
 
-        const source = work.source;
+        const url = Storage.manifest(
 
-        const root = this.#cache.sources[source];
+            work.source,
+            work.slug,
+            chapterPath
 
-        if (!root) {
-            throw new Error(`Unknown source "${source}"`);
-        }
-
-        const url =
-            `${root}/${encodeURIComponent(work.slug)}/${chapterPath}/item.json`;
+        );
 
         const response = await fetch(url, {
+
             cache: "no-store"
+
         });
 
         if (!response.ok) {
@@ -67,15 +73,17 @@ export class Fetch {
         }
 
         return response.json();
+
     }
 
     static image(manifest, page) {
 
         const file =
+
             `${String(page).padStart(manifest.padding, "0")}.${manifest.extension}`;
 
         return `${manifest.base_url}/${file}`;
+
     }
 
 }
-
