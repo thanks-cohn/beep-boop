@@ -1,5 +1,7 @@
 // src/page/landing.js
 
+import { Blocks } from "../blocks/blocks.js";
+
 export class Landing {
 
     static async start() {
@@ -29,6 +31,8 @@ export class Landing {
             </section>
 
         `;
+
+        await Blocks.start();
 
     }
 
