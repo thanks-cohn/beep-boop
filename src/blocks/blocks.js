@@ -2,7 +2,7 @@
 
 export class Blocks {
 
-    static async start() {
+    static async render() {
 
         const container = document.getElementById("landing-blocks");
 
