@@ -1,5 +1,7 @@
 // src/page/landing.js
 
+import { Rotunda } from "../components/rotunda.js";
+import { Search } from "../components/search.js";
 import { Blocks } from "../blocks/blocks.js";
 
 export class Landing {
@@ -16,23 +18,25 @@ export class Landing {
 
             <section id="landing-page">
 
-                <section id="landing-rotunda">
+                <section id="landing-hero">
+
+                    <div id="rotunda-container"></div>
+
+                    <div id="search-container"></div>
 
                 </section>
 
-                <section id="landing-search">
-
-                </section>
-
-                <section id="landing-blocks">
-
-                </section>
+                <section id="landing-blocks"></section>
 
             </section>
 
         `;
 
-        await Blocks.start();
+        await Rotunda.render();
+
+        await Search.render();
+
+        await Blocks.render();
 
     }
 
