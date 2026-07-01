@@ -56,3 +56,20 @@ export class Landing {
         ]);
     }
 }
+
+// Listen for search clicks
+window.addEventListener("open-reader", (e) => {
+    const entry = e.detail;
+
+    const reader = document.getElementById("reader-view");
+
+    if (!reader) return;
+
+    reader.innerHTML = `
+        <div class="reader-loading">Loading...</div>
+    `;
+
+    window.dispatchEvent(new CustomEvent("load-reader", {
+        detail: entry
+    }));
+});

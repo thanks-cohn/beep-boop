@@ -56,3 +56,31 @@ export class Reader {
         }
     }
 }
+
+window.addEventListener("load-reader", async (e) => {
+    const entry = e.detail;
+
+    const container = document.getElementById("reader-view");
+
+    if (!container) return;
+
+    const manifestUrl = entry.manifest_url;
+
+    const manifest = await fetch(manifestUrl).then(r => r.json());
+
+    container.innerHTML = "";
+
+    for (let i = 1; i <= manifest.pages; i++) {
+        const img = document.createElement("img");
+
+        img.loading = "lazy";
+        img.decoding = "async";
+
+        img.src = `${manifest.base_url}/${String(i).padStart(manifest.padding, "0")}.${manifest.extension}`;
+
+        container.appendChild(img);
+    }
+
+    container.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
