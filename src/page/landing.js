@@ -1,51 +1,53 @@
 import { Rotunda } from "../components/rotunda.js";
 import { Search } from "../components/search.js";
 
-async function safeStart(name, start) {
+async function safeStart(name, fn) {
     try {
-        await start();
-        console.log(`${name} loaded.`);
-    } catch (error) {
-        console.warn(`${name} failed, continuing.`, error);
+        await fn();
+    } catch (e) {
+        console.warn(`${name} failed`, e);
     }
 }
 
 export class Landing {
     static async start() {
         const container = document.getElementById("reader-container");
-
-        if (!container) {
-            return;
-        }
+        if (!container) return;
 
         container.innerHTML = `
-            <main class="landing">
-                <section class="landing-hero">
-                    <h1>AnimePlex</h1>
-                    <p>Search and read from the archive.</p>
+        <div class="app-root">
 
-                    <div class="landing-search"></div>
-                </section>
+            <!-- SEARCH (HIGHEST PRIORITY / EYE LEVEL) -->
+            <header class="search-layer">
+                <div class="landing-search"></div>
+            </header>
 
-                <section class="landing-columns">
-                    <article>
-                        <h2>Read</h2>
-                        <p>Find chapters quickly from the local browser index.</p>
-                    </article>
+            <!-- ROTUNDA (DISCOVERY LAYER) -->
+            <section class="rotunda-layer">
+                <div class="landing-rotunda"></div>
+            </section>
 
-                    <article>
-                        <h2>Browse</h2>
-                        <p>Explore featured works from the rotunda.</p>
-                    </article>
+            <!-- 3 COLUMN SYSTEM -->
+            <div class="app-shell">
 
-                    <article>
-                        <h2>Archive</h2>
-                        <p>Static data, fast links, and portable storage roots.</p>
-                    </article>
-                </section>
+                <aside class="col left">
+                    <div class="panel">
+                        <h3>Library</h3>
+                    </div>
+                </aside>
 
-                <section class="landing-rotunda" aria-label="Featured works"></section>
-            </main>
+                <main class="col center">
+                    <div id="reader-view"></div>
+                </main>
+
+                <aside class="col right">
+                    <div class="panel">
+                        <h3>Tools</h3>
+                    </div>
+                </aside>
+
+            </div>
+        </div>
         `;
 
         await Promise.allSettled([

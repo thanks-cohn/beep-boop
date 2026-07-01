@@ -433,3 +433,137 @@ button{
 .search-result:hover {
     background: rgba(255,255,255,.12);
 }
+
+.app-shell {
+    display: grid;
+    grid-template-columns: 1fr 2.2fr 1fr;
+    height: 100vh;
+    width: 100%;
+}
+
+.col {
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.center {
+    border-left: 1px solid rgba(255,255,255,0.08);
+    border-right: 1px solid rgba(255,255,255,0.08);
+}
+
+.panel {
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+}
+
+.top-block {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Reader inject area */
+#reader-view {
+    margin-top: 20px;
+}
+
+
+.app-root {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* ROTUNDA ALWAYS ABOVE EVERYTHING */
+.rotunda-layer {
+    width: 100%;
+    padding: 10px 0;
+    background: rgba(0,0,0,0.2);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+/* 3 COLUMN SYSTEM BELOW */
+.app-shell {
+    display: grid;
+    grid-template-columns: 1fr 2.2fr 1fr;
+    flex: 1;
+    min-height: 0;
+}
+
+.col {
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.center {
+    border-left: 1px solid rgba(255,255,255,0.08);
+    border-right: 1px solid rgba(255,255,255,0.08);
+}
+
+/* IMPORTANT: rotunda never scrolls with columns */
+.rotunda-layer {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+
+/* SEARCH = PRIMARY FOCUS */
+.search-layer {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 14px 0;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+/* ROTUNDA BELOW SEARCH */
+.rotunda-layer {
+    width: 100%;
+    padding: 10px 0;
+}
+
+/* keep rotunda visually secondary */
+.rotunda-layer {
+    opacity: 0.95;
+}
+
+/* make search visually dominant */
+.landing-search input {
+    font-size: 18px;
+    padding: 14px 18px;
+    border-radius: 999px;
+    width: min(700px, 90%);
+    margin: 0 auto;
+    display: block;
+}
+
+
+/* SEARCH MUST ALWAYS FLOAT ABOVE EVERYTHING */
+.search-layer {
+    position: sticky;
+    top: 0;
+    z-index: 9999;
+}
+
+/* dropdown container */
+.search-results {
+    position: relative;
+    z-index: 10000;
+}
+
+/* each result list block */
+.search-box {
+    position: relative;
+    z-index: 10000;
+}
+
+/* rotunda must NEVER overlap UI layers */
+.rotunda-layer {
+    position: relative;
+    z-index: 10;
+}
+
