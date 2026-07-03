@@ -1369,13 +1369,247 @@ body:not(.reader-active) .blocks-main {
 }
 
 
+/* Animeplex site title */
+
+#site-title{
+
+    font-family:"Geist Pixel", monospace !important;
+
+    font-size:2.5rem;
+
+    font-weight:400;
+
+    letter-spacing:2px;
+
+    color:#ffffff;
+
+    margin:0;
+
+    user-select:none;
+
+    text-shadow:
+        0 0 10px rgba(255,255,255,.15);
+
+}
+
+
+/* Animeplex brand inside landing/home */
+.search-layer {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+.landing-brand {
+    font-family: "Geist Pixel", monospace !important;
+    font-size: 2.35rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: #fff;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.search-layer .landing-search {
+    flex: 1;
+}
+
+
 /* =====================================================
-   FINAL HEADER / BRAND CLEANUP
-   Brand row above; search row right-aligned, fixed width
+   Animeplex 3-region header
+   left brand | true-centered search | right reserved
    ===================================================== */
 
+.search-layer {
+    display: grid !important;
+    grid-template-columns: 280px minmax(320px, 760px) 280px;
+    justify-content: center;
+    align-items: center;
+    gap: 22px;
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+.header-left {
+    justify-self: start;
+}
+
+.header-center {
+    width: 100%;
+    justify-self: center;
+}
+
+.header-right {
+    justify-self: end;
+    min-height: 1px;
+}
+
+.landing-brand {
+    font-family: "Geist Pixel", monospace !important;
+    font-size: 2.35rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: #fff;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.header-reserved {
+    min-width: 1px;
+    min-height: 1px;
+}
+
+.header-center .landing-search {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+}
+
+.header-center .landing-search input {
+    width: 100% !important;
+}
+
+
+/* =====================================================
+   3-row Animeplex ticker
+   ===================================================== */
+
+.header-ticker {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.header-ticker-track {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.header-ticker-row {
+    position: absolute;
+    left: 0;
+    right: 0;
+
+    white-space: nowrap;
+
+    font-family: "Geist Pixel", monospace;
+    color: rgba(255,255,255,.88);
+    letter-spacing: 2px;
+
+    animation-name: animeplexTicker;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-duration: var(--ticker-speed);
+}
+
+.header-ticker-row-1 {
+    top: 5px;
+    font-size: 1.05rem;
+}
+
+.header-ticker-row-2 {
+    top: 25px;
+    font-size: 1.35rem;
+    animation-direction: reverse;
+}
+
+.header-ticker-row-3 {
+    top: 48px;
+    font-size: 1rem;
+}
+
+.header-ticker-hero {
+    position: absolute;
+    inset: 0;
+
+    display: grid;
+    place-items: center;
+
+    font-family: "Geist Pixel", monospace;
+    font-size: 3rem;
+    letter-spacing: 5px;
+    color: rgba(255,255,255,.10);
+
+    animation: animeplexHeroPulse 4.2s ease-in-out infinite;
+}
+
+/* search stays readable and hides ticker behind it */
+.header-center {
+    position: relative;
+    z-index: 5;
+}
+
+.header-center::before {
+    content: "";
+    position: absolute;
+    inset: -8px -18px;
+    z-index: -1;
+
+    background: rgba(0,0,0,.92);
+    border-radius: 999px;
+}
+
+@keyframes animeplexTicker {
+    from {
+        transform: translateX(100vw);
+    }
+
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+@keyframes animeplexHeroPulse {
+    0%, 100% {
+        opacity: .25;
+        transform: scale(.98);
+    }
+
+    50% {
+        opacity: .55;
+        transform: scale(1.04);
+    }
+}
+
+
+/* fixed top-left site brand, outside search row */
+#site-title {
+    position: fixed;
+    top: 14px;
+    left: 24px;
+    z-index: 10050;
+
+    font-family: "Geist Pixel", monospace !important;
+    font-size: 2.2rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+
+    color: #fff;
+    margin: 0;
+    user-select: none;
+}
+
+
+/* =====================================================
+   ANIPLEX top row above search
+   ===================================================== */
+
+/* hide old index.html header so it does not fight Landing */
 #header {
     display: none !important;
+}
+
+#site-title {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    z-index: auto !important;
 }
 
 .landing-brand-row {
@@ -1394,50 +1628,51 @@ body:not(.reader-active) .blocks-main {
     text-shadow: 0 0 10px rgba(255,255,255,.15);
 }
 
-.search-layer {
-    position: sticky;
-    top: 0;
-    z-index: 9999;
 
+/* =====================================================
+   Final header alignment polish
+   ===================================================== */
+
+.search-layer {
     display: flex !important;
     justify-content: flex-end !important;
     align-items: center !important;
-
-    width: 100%;
-    padding: 14px 32px !important;
-
-    background: rgba(0,0,0,0.55);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding-left: 28px !important;
+    padding-right: 28px !important;
 }
 
-/* this is the important part: the wrapper is fixed, not full-row */
-.search-layer .header-center,
 .search-layer .landing-search {
-    width: 520px !important;
-    min-width: 520px !important;
-    max-width: 520px !important;
-    flex: 0 0 520px !important;
-
+    width: 720px !important;
+    max-width: min(720px, calc(100vw - 56px)) !important;
     margin-left: auto !important;
     margin-right: 0 !important;
-
-    position: relative;
-    z-index: 10000;
+    flex: 0 0 auto !important;
 }
 
-.search-layer .search,
+.landing-brand-top {
+    font-family: "Geist Pixel", monospace !important;
+}
+
+
+/* fix: search goes right, but does NOT take whole row */
+.search-layer {
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    padding: 14px 32px !important;
+}
+
+.search-layer .landing-search {
+    width: 520px !important;
+    max-width: 520px !important;
+    min-width: 520px !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    flex: 0 0 520px !important;
+}
+
 .search-layer .search-box,
-.search-layer .search-input,
-.search-layer input {
+.search-layer .search-input {
     width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box;
 }
 
-.search-layer .search-results {
-    left: 0 !important;
-    right: 0 !important;
-    width: auto !important;
-}
