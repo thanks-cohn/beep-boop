@@ -1,12 +1,14 @@
 import "./styles/landing.css";
 
 import { Page } from "./page/page.js";
+import { Footer } from "./components/footer.js";
 
 async function boot() {
     console.log("AnimePlex");
 
     try {
         await Page.start();
+        Footer.start();
     } catch (error) {
         console.error("Page failed to start.", error);
 
