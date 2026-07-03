@@ -2,6 +2,7 @@ import "./styles/landing.css";
 
 import { Page } from "./page/page.js";
 import { Footer } from "./components/footer.js";
+import { SiteOverlay } from "./components/site_overlay.js";
 
 async function boot() {
     console.log("AnimePlex");
@@ -9,6 +10,7 @@ async function boot() {
     try {
         await Page.start();
         Footer.start();
+        SiteOverlay.start();
     } catch (error) {
         console.error("Page failed to start.", error);
 

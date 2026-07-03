@@ -1,0 +1,19 @@
+{
+    "version": 1,
+    "active": true,
+    "hide_ms": 120000,
+    "links": [
+        {
+            "id": "google",
+            "url": "https://www.google.com/"
+        },
+        {
+            "id": "bing",
+            "url": "https://www.bing.com/"
+        },
+        {
+            "id": "duckduckgo",
+            "url": "https://duckduckgo.com/"
+        }
+    ]
+}

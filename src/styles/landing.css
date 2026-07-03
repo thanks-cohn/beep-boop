@@ -518,3 +518,24 @@ body.reader-active .blocks-side-rail {
     }
 }
 
+
+.site-overlay-ad {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: block;
+    background: transparent;
+    cursor: pointer;
+}
+
+.site-overlay-mascot {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.85);
+    color: #111;
+    font-size: 18px;
+    pointer-events: none;
+}
