@@ -1287,3 +1287,48 @@ body.reader-active .reader-page {
     background: #050505;
     display: block;
 }
+
+/* ===================== READER POLISH: NO WHITE FLASHES ===================== */
+
+body.reader-active,
+body.reader-active .app-root,
+body.reader-active #reader-container,
+body.reader-active #blocks-root,
+body.reader-active .blocks-shell,
+body.reader-active .blocks-main,
+body.reader-active .landing-shell,
+body.reader-active #blocks-reader,
+body.reader-active .reader-pages {
+    background: #050505 !important;
+}
+
+body.reader-active .reader-page {
+    background: #050505 !important;
+    display: block;
+}
+
+/* side columns: softer, padded, less blocky */
+body.reader-active .blocks-side {
+    margin: 14px;
+    padding: 18px;
+    border-radius: 24px;
+    background: #070707 !important;
+    overflow: visible !important;
+}
+
+body.reader-active .blocks-side .site-block {
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+/* reader controls follow, then disappear when idle */
+.reader-home-bar {
+    transition: opacity 180ms ease, transform 180ms ease;
+    will-change: opacity, transform;
+}
+
+.reader-home-bar.reader-nav-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-120%);
+}

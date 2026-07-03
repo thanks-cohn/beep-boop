@@ -111,6 +111,34 @@ function buildReaderTopBar(source, work, chapter) {
     return homeBar;
 }
 
+
+function installReaderChromeAutohide(bar) {
+    let hideTimer = null;
+
+    function showThenHide() {
+        bar.classList.remove("reader-nav-hidden");
+
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => {
+            if (document.body.classList.contains("reader-active")) {
+                bar.classList.add("reader-nav-hidden");
+            }
+        }, 1400);
+    }
+
+    if (window.__readerNavScrollHandler) {
+        window.removeEventListener("scroll", window.__readerNavScrollHandler);
+    }
+
+    window.__readerNavScrollHandler = showThenHide;
+    window.addEventListener("scroll", window.__readerNavScrollHandler, { passive: true });
+
+    bar.addEventListener("mouseenter", showThenHide);
+    bar.addEventListener("focusin", showThenHide);
+
+    showThenHide();
+}
+
 async function renderManifestInto(root, manifestUrl, source, work, chapter) {
     if (!root || !manifestUrl) {
         console.warn("Reader: missing root or manifestUrl.");
@@ -131,7 +159,9 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
     const wrapper = document.createElement("div");
     wrapper.className = "reader-pages";
 
-    wrapper.appendChild(buildReaderTopBar(source, work, chapter));
+    const readerBar = buildReaderTopBar(source, work, chapter);
+    wrapper.appendChild(readerBar);
+    installReaderChromeAutohide(readerBar);
 
     const anchor = document.createElement("div");
     anchor.id = "chapter-start";
