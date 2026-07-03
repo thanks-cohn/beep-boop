@@ -92,3 +92,83 @@
     max-width:140px;
 
 }
+
+/* ================= ROTUNDA CLICK OVERLAYS ================= */
+
+.rotunda-card {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    padding: 0;
+}
+
+.rotunda-cover-frame {
+    position: relative;
+    width: 140px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(0,0,0,.45);
+}
+
+.rotunda-cover {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.rotunda-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 6px;
+    padding: 12px 10px;
+
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(0,0,0,0.05),
+            rgba(0,0,0,0.72)
+        );
+
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.rotunda-card:hover .rotunda-overlay,
+.rotunda-card:focus-visible .rotunda-overlay {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.rotunda-card:hover .rotunda-cover,
+.rotunda-card:focus-visible .rotunda-cover {
+    transform: scale(1.04);
+}
+
+.rotunda-overlay-title {
+    color: white;
+    font-weight: 800;
+    font-size: .85rem;
+    line-height: 1.1;
+    text-shadow: 0 2px 8px rgba(0,0,0,.75);
+}
+
+.rotunda-overlay-action {
+    color: rgba(255,255,255,.86);
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+.rotunda-card:focus-visible {
+    outline: 2px solid rgba(255,255,255,.85);
+    outline-offset: 6px;
+    border-radius: 12px;
+}
+
