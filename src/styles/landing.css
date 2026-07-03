@@ -546,3 +546,53 @@ body.reader-active .blocks-side-rail {
 .blocks-side .block-iframe {
     min-height: 620px;
 }
+
+/* =========================
+   TIMED CLICK OVERLAY
+   ========================= */
+
+.site-click-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+}
+
+.site-click-overlay-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 22px 28px;
+    border-radius: 18px;
+    background: transparent;
+    color: white;
+    text-align: center;
+    box-shadow: none;
+}
+
+.site-click-overlay-box strong {
+    font-size: 1.2rem;
+}
+
+.site-click-overlay-box em {
+    font-style: normal;
+    opacity: 0.8;
+}
+
+
+/* =========================
+   TRANSPARENT OVERLAY MODE
+   ========================= */
+
+.site-click-overlay {
+    background: transparent !important;
+}
+
+.site-click-overlay-box {
+    display: none !important;
+}

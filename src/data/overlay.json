@@ -1,0 +1,11 @@
+{
+  "enabled": true,
+  "intervalSeconds": 600,
+  "urls": [
+    "https://animeplex.lol",
+    "https://the-manga.one",
+    "https://mangadesu.lol"
+  ],
+  "label": "Special feature",
+  "message": "Click to continue"
+}

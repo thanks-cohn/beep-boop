@@ -1,4 +1,5 @@
 import "./styles/landing.css";
+import { Overlay } from "./advertising/overlay.js";
 
 import { Page } from "./page/page.js";
 import { Footer } from "./components/footer.js";
@@ -26,3 +27,5 @@ async function boot() {
 }
 
 boot();
+
+Overlay.start();
