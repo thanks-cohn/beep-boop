@@ -63,6 +63,10 @@ export class Landing {
 
         container.innerHTML = `
         <div class="app-root">
+            <div class="landing-brand-row">
+                <div class="landing-brand-top">ANIPLEX</div>
+            </div>
+
             <header class="search-layer">
                 <div class="header-ticker" aria-hidden="true">
                     <div class="header-ticker-track" id="header-ticker-track"></div>

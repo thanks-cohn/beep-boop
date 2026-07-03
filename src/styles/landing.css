@@ -1577,3 +1577,54 @@ body:not(.reader-active) .blocks-main {
     }
 }
 
+
+/* fixed top-left site brand, outside search row */
+#site-title {
+    position: fixed;
+    top: 14px;
+    left: 24px;
+    z-index: 10050;
+
+    font-family: "Geist Pixel", monospace !important;
+    font-size: 2.2rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+
+    color: #fff;
+    margin: 0;
+    user-select: none;
+}
+
+
+/* =====================================================
+   ANIPLEX top row above search
+   ===================================================== */
+
+/* hide old index.html header so it does not fight Landing */
+#header {
+    display: none !important;
+}
+
+#site-title {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    z-index: auto !important;
+}
+
+.landing-brand-row {
+    width: 100%;
+    padding: 14px 28px 6px;
+    background: #090909;
+}
+
+.landing-brand-top {
+    font-family: "Geist Pixel", monospace !important;
+    font-size: 2.25rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: #fff;
+    user-select: none;
+    text-shadow: 0 0 10px rgba(255,255,255,.15);
+}
+
