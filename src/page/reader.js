@@ -141,8 +141,23 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
         const img = document.createElement("img");
 
         img.className = "reader-page";
-        img.loading = "eager";
+
+        img.loading = (i <= 3) ? "eager" : "lazy";
         img.decoding = "async";
+
+        img.style.background = "#050505";
+        img.style.display = "block";
+        img.style.width = "100%";
+        img.style.minHeight = "100vh";
+
+        img.onload = () => {
+            img.style.minHeight = "";
+            img.style.background = "transparent";
+        };
+
+        img.onerror = () => {
+            img.style.background = "#222";
+        };
 
         img.src =
             `${manifest.base_url}/` +

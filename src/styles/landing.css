@@ -1274,3 +1274,16 @@ body.reader-active #blocks-right .site-block:last-child {
     min-height: 1000px !important;
     width: 100%;
 }
+
+/* eliminate white flashes while images stream */
+/* Reader only: prevent white flashes while images load */
+body.reader-active #reader-container,
+body.reader-active #blocks-reader,
+body.reader-active .reader-pages {
+    background: #050505 !important;
+}
+
+body.reader-active .reader-page {
+    background: #050505;
+    display: block;
+}
