@@ -54,7 +54,19 @@ export class Search {
         const input = mount.querySelector(".search-input");
         const results = mount.querySelector(".search-results");
 
-        const index = (await fetch(SEARCH_INDEX_URL).then(r => r.json())).entries || [];
+        let index = [];
+
+        try {
+            const response = await fetch(SEARCH_INDEX_URL);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            index = (await response.json()).entries || [];
+        } catch (error) {
+            console.warn("Search index failed to load.", error);
+        }
 
         // -----------------------------
         // HOVER → EXPAND

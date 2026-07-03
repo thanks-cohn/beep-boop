@@ -14,6 +14,15 @@ function openReader(card) {
     }));
 }
 
+function firstImageFromManifest(manifest, source, slug, chapter) {
+    const resolved = resolveManifest(manifest, source, slug, chapter);
+    const padding = Number(resolved.padding) || 3;
+    const extension = resolved.extension || "webp";
+    const filename = `${String(1).padStart(padding, "0")}.${extension}`;
+
+    return `${resolved.base_url}/${filename}`;
+}
+
 export class Rotunda {
     static async start() {
         const container = document.querySelector(".landing-rotunda");
@@ -22,49 +31,31 @@ export class Rotunda {
         const environment = storage.active;
         const sources = storage[environment]?.sources ?? {};
         const works = rotunda.works ?? [];
-        const cards = [];
-
-        for (const work of works) {
-            try {
+        const cards = works
+            .map(work => {
                 const chapter = work.chapters?.[0];
 
                 if (!chapter) {
                     console.warn(`Rotunda: skipping "${work.slug}" (no chapters).`);
-                    continue;
+                    return null;
                 }
 
                 if (!sources[work.source]) {
                     console.warn(`Rotunda: skipping "${work.slug}" (unknown source).`);
-                    continue;
+                    return null;
                 }
 
-                const manifestUrl = Storage.manifest(work.source, work.slug, chapter);
-                const response = await fetch(manifestUrl, { cache: "no-store" });
-
-                if (!response.ok) {
-                    console.warn(`Rotunda: skipping "${work.slug}" (${response.status}).`);
-                    continue;
-                }
-
-                let manifest = await response.json();
-                manifest = resolveManifest(manifest, work.source, work.slug, chapter);
-
-                const filename =
-                    `${String(1).padStart(manifest.padding, "0")}.${manifest.extension}`;
-
-                cards.push({
-                    title: work.display,
+                return {
+                    title: work.display || work.slug,
                     slug: work.slug,
                     source: work.source,
                     chapter,
-                    image: `${manifest.base_url}/${filename}`
-                });
-            } catch (error) {
-                console.warn(`Rotunda: failed to load "${work.slug}".`, error);
-            }
-        }
+                    image: "",
+                };
+            })
+            .filter(Boolean);
 
-        console.log(`Rotunda loaded ${cards.length} works.`);
+        console.log(`Rotunda rendering ${cards.length} works.`);
 
         const track = document.createElement("div");
         track.className = "rotunda-track";
@@ -80,8 +71,13 @@ export class Rotunda {
 
             const img = document.createElement("img");
             img.className = "rotunda-cover";
-            img.src = card.image;
             img.alt = card.title;
+            img.loading = "lazy";
+            img.decoding = "async";
+
+            const fallback = document.createElement("div");
+            fallback.className = "rotunda-cover-fallback";
+            fallback.textContent = card.title;
 
             const overlay = document.createElement("div");
             overlay.className = "rotunda-overlay";
@@ -96,11 +92,41 @@ export class Rotunda {
 
             button.addEventListener("click", () => openReader(card));
 
-            frame.append(img, overlay);
+            frame.append(fallback, img, overlay);
             button.append(frame, title);
             track.appendChild(button);
         }
 
         container.replaceChildren(track);
+
+        await Promise.all(cards.map(async (card, index) => {
+            try {
+                const manifestUrl = Storage.manifest(card.source, card.slug, card.chapter);
+                const response = await fetch(manifestUrl, { cache: "no-store" });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const contentType = response.headers.get("content-type") || "";
+
+                if (contentType && !contentType.includes("application/json")) {
+                    throw new Error(`Expected JSON manifest, got "${contentType}".`);
+                }
+
+                const manifest = await response.json();
+                const image = firstImageFromManifest(manifest, card.source, card.slug, card.chapter);
+                const img = track.children[index]?.querySelector(".rotunda-cover");
+
+                if (img) {
+                    img.src = image;
+                    img.addEventListener("load", () => {
+                        img.classList.add("is-loaded");
+                    }, { once: true });
+                }
+            } catch (error) {
+                console.warn(`Rotunda: cover unavailable for "${card.slug}".`, error);
+            }
+        }));
     }
 }

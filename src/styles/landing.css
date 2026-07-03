@@ -193,7 +193,9 @@ button {
     z-index: 100;
     width: 100%;
     background: #161616;
-    overflow: hidden;
+    overflow: visible;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
 }
 
 .landing-rotunda,
@@ -201,6 +203,10 @@ button {
 .rotunda-card {
     position: relative;
     z-index: 100;
+}
+
+.landing-rotunda {
+    min-height: 280px;
 }
 
 /* ================= BLOCK LAYOUT ================= */
