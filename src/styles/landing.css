@@ -518,3 +518,31 @@ body.reader-active .blocks-side-rail {
     }
 }
 
+
+/* ================= JSON BLOCK MEDIA ================= */
+
+.json-block.image-block,
+.json-block.embed-block,
+.json-block.iframe-block {
+    padding: 0;
+}
+
+.block-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 16px;
+}
+
+.block-iframe {
+    display: block;
+    width: 100%;
+    min-height: 420px;
+    border: 0;
+    border-radius: 16px;
+    background: var(--card);
+}
+
+.blocks-side .block-iframe {
+    min-height: 620px;
+}

@@ -1,17 +1,38 @@
 {
-    "left": [
-        { "html": "/blocks/left-1.html" },
-        { "html": "/blocks/left-2.html" },
-        { "html": "/blocks/left-3.html" }
-    ],
-    "center": [
-        { "html": "/blocks/center-1.html" },
-        { "html": "/blocks/center-2.html" },
-        { "html": "/blocks/center-3.html" }
-    ],
-    "right": [
-        { "html": "/blocks/right-1.html" },
-        { "html": "/blocks/right-2.html" },
-        { "html": "/blocks/right-3.html" }
-    ]
+  "left": [
+    {
+      "image": "https://picsum.photos/seed/cute-anime-left-1/320/520",
+      "href": "https://animeplex.lol"
+    },
+    {
+      "image": "https://picsum.photos/seed/cute-anime-left-2/320/520"
+    },
+    {
+      "image": "https://picsum.photos/seed/cute-anime-left-sticky/320/720"
+    }
+  ],
+  "center": [
+    {
+      "title": "Welcome!",
+      "body": "Welcome to AnimePlex! If something does not load right away, refresh the page and try again. Enjoy!"
+    },
+    {
+      "image": "https://picsum.photos/seed/cute-anime-center-big/900/480"
+    },
+    {
+      "title": "Enjoy the site!",
+      "body": "Search, read, explore, and have fun. New blocks can be changed from blocks.json."
+    }
+  ],
+  "right": [
+    {
+      "image": "https://picsum.photos/seed/cute-anime-right-1/320/520"
+    },
+    {
+      "image": "https://picsum.photos/seed/cute-anime-right-2/320/520"
+    },
+    {
+      "image": "https://picsum.photos/seed/cute-anime-right-sticky/320/720"
+    }
+  ]
 }
