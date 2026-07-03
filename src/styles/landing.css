@@ -1416,3 +1416,58 @@ body:not(.reader-active) .blocks-main {
     flex: 1;
 }
 
+
+/* =====================================================
+   Animeplex 3-region header
+   left brand | true-centered search | right reserved
+   ===================================================== */
+
+.search-layer {
+    display: grid !important;
+    grid-template-columns: 280px minmax(320px, 760px) 280px;
+    justify-content: center;
+    align-items: center;
+    gap: 22px;
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+.header-left {
+    justify-self: start;
+}
+
+.header-center {
+    width: 100%;
+    justify-self: center;
+}
+
+.header-right {
+    justify-self: end;
+    min-height: 1px;
+}
+
+.landing-brand {
+    font-family: "Geist Pixel", monospace !important;
+    font-size: 2.35rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: #fff;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.header-reserved {
+    min-width: 1px;
+    min-height: 1px;
+}
+
+.header-center .landing-search {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+}
+
+.header-center .landing-search input {
+    width: 100% !important;
+}
+
