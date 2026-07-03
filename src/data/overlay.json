@@ -1,11 +1,11 @@
 {
   "enabled": true,
-  "intervalSeconds": 600,
+  "intervalSeconds": 180,
   "urls": [
-    "https://animeplex.lol",
-    "https://the-manga.one",
-    "https://mangadesu.lol"
+    "https://s.pemsrv.com/v1/link.php?cat=&idzone=5962682&type=8",
+    "https://s.pemsrv.com/v1/link.php?cat=&idzone=5962682&type=8",
+    "https://s.pemsrv.com/v1/link.php?cat=&idzone=5962682&type=8"
   ],
-  "label": "Special feature",
-  "message": "Click to continue"
+  "label": " ",
+  "message": " "
 }
