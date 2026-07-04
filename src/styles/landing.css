@@ -596,3 +596,40 @@ body.reader-active .blocks-side-rail {
 .site-click-overlay-box {
     display: none !important;
 }
+
+
+/* =========================
+ *  SIDE COLUMN BACKGROUND FIX
+ *  ========================= */
+
+.blocks-side,
+.blocks-column,
+.blocks-side-flow,
+.blocks-side-rail {
+    background: #000 !important;
+}
+
+.col.left,
+.col.right {
+    background: #000 !important;
+}
+
+
+
+/* =========================
+   HARD AD IFRAME BLACK FIX
+   ========================= */
+
+.embed-block,
+.embed-block > div,
+.blocks-side-rail,
+.blocks-side-flow {
+    background: #000 !important;
+}
+
+.embed-block iframe {
+    background: #000 !important;
+    border: 0 !important;
+    display: block !important;
+    color-scheme: dark;
+}
