@@ -2,6 +2,10 @@ import blocksData from "../data/blocks.json";
 
 const IMAGE_PATTERN = /\.(avif|bmp|gif|jpe?g|png|svg|webp)(\?.*)?$/i;
 const HTML_FRAGMENT_PATTERN = /\.html?(\?.*)?$/i;
+const SIDEBAR_REFRESH_INTERVAL_MS = 90 * 1000;
+
+let sidebarRefreshTimer = null;
+let sidebarRefreshRun = 0;
 
 async function loadText(path) {
     const response = await fetch(path);
@@ -199,6 +203,49 @@ async function renderRail(target, item) {
     await renderBlock(target, item);
 }
 
+async function renderSidebars(runId, left, right) {
+    if (runId !== sidebarRefreshRun) return;
+
+    await renderBlocks(document.getElementById("blocks-left-flow"), left.flow);
+    if (runId !== sidebarRefreshRun) return;
+
+    await renderRail(document.getElementById("blocks-left-rail"), left.rail);
+    if (runId !== sidebarRefreshRun) return;
+
+    await renderBlocks(document.getElementById("blocks-right-flow"), right.flow);
+    if (runId !== sidebarRefreshRun) return;
+
+    await renderRail(document.getElementById("blocks-right-rail"), right.rail);
+}
+
+function stopSidebarRefresh() {
+    if (sidebarRefreshTimer) {
+        clearInterval(sidebarRefreshTimer);
+        sidebarRefreshTimer = null;
+    }
+
+    sidebarRefreshRun += 1;
+}
+
+function startSidebarRefresh(left, right) {
+    stopSidebarRefresh();
+
+    const runId = sidebarRefreshRun;
+    let isRefreshing = false;
+
+    sidebarRefreshTimer = window.setInterval(async () => {
+        if (isRefreshing || !document.getElementById("blocks-root")) return;
+
+        isRefreshing = true;
+
+        try {
+            await renderSidebars(runId, left, right);
+        } finally {
+            isRefreshing = false;
+        }
+    }, SIDEBAR_REFRESH_INTERVAL_MS);
+}
+
 function renderShell(root) {
     root.innerHTML = `
         <div id="blocks-shell" class="blocks-shell">
@@ -231,14 +278,15 @@ export class Blocks {
         const right = splitSideBlocks(blocksData.right || []);
         const center = blocksData.center || [];
 
-        await renderBlocks(document.getElementById("blocks-left-flow"), left.flow);
-        await renderRail(document.getElementById("blocks-left-rail"), left.rail);
+        stopSidebarRefresh();
+        const runId = sidebarRefreshRun;
+
+        await renderSidebars(runId, left, right);
 
         if (!document.body.classList.contains("reader-active")) {
             await renderBlocks(document.getElementById("blocks-center"), center);
         }
 
-        await renderBlocks(document.getElementById("blocks-right-flow"), right.flow);
-        await renderRail(document.getElementById("blocks-right-rail"), right.rail);
+        startSidebarRefresh(left, right);
     }
 }
