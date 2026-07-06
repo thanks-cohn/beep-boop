@@ -42,39 +42,76 @@ button {
 
 /* ================= HEADER / SEARCH ================= */
 
-.landing-brand-row {
-    width: 100%;
-    padding: 14px 28px 6px;
-    background: #090909;
-}
-
-.landing-brand-top {
-    font-family: "Geist Pixel", monospace;
-    font-size: 2.25rem;
-    letter-spacing: 2px;
-    color: #fff;
-}
-
 .search-layer {
     position: relative;
     z-index: 5000;
-    min-height: 76px;
-    height: 76px;
+    min-height: 86px;
+    height: 86px;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
+    gap: 24px;
     padding: 0 32px;
-    background: rgba(0,0,0,0.55);
+    background:
+        radial-gradient(circle at 52% 0%, rgba(255,255,255,.08), transparent 34%),
+        rgba(0,0,0,0.74);
     border-bottom: 1px solid var(--border);
     overflow: visible;
+    isolation: isolate;
+}
+
+.landing-brand {
+    position: relative;
+    z-index: 5030;
+    flex: 0 0 auto;
+    font-family: "Geist Pixel", monospace;
+    font-size: clamp(1.35rem, 2.5vw, 2.25rem);
+    font-weight: 900;
+    letter-spacing: .18em;
+    color: #fff;
+    text-decoration: none;
+    text-shadow: 0 0 18px rgba(255,255,255,.28), 0 3px 18px rgba(0,0,0,.9);
+}
+
+.ghost-text-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+    user-select: none;
+}
+
+.ghost-text {
+    position: absolute;
+    display: block;
+    max-width: 38vw;
+    white-space: nowrap;
+    font-family: "Geist Pixel", monospace;
+    font-size: clamp(.74rem, 1.4vw, 1.12rem);
+    letter-spacing: .24em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.13);
+    text-shadow: 0 0 22px rgba(255,255,255,.12);
+    animation: ghostWhisper 8s ease-in-out infinite alternate;
+}
+
+.ghost-text-left { left: 16%; top: 12px; animation-delay: -1.5s; }
+.ghost-text-center { left: 43%; top: 31px; opacity: .72; animation-delay: -4s; }
+.ghost-text-right { right: 4%; top: 8px; animation-delay: -2.6s; }
+.ghost-text-low { left: 30%; bottom: 9px; opacity: .58; animation-delay: -6s; }
+
+@keyframes ghostWhisper {
+    from { transform: translate3d(-8px, 0, 0); opacity: .32; }
+    to { transform: translate3d(10px, -2px, 0); opacity: .7; }
 }
 
 .search-layer .header-center,
 .search-layer .landing-search {
     width: 520px;
-    max-width: calc(100vw - 64px);
+    max-width: min(520px, calc(100vw - 64px));
     position: relative;
-    z-index: 5010;
+    z-index: 5030;
 }
 
 .search-box {
@@ -86,12 +123,13 @@ button {
 .landing-search input {
     width: 100%;
     height: 42px;
-    border: 1px solid rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.28);
     border-radius: 999px;
     outline: none;
-    background: rgba(0,0,0,.62);
+    background: rgba(0,0,0,.76);
     color: white;
     padding: 0 18px;
+    box-shadow: 0 8px 34px rgba(0,0,0,.5);
 }
 
 .search-results {
@@ -128,10 +166,23 @@ button {
 
 /* ================= TICKER ================= */
 
+.ticker-layer {
+    position: relative;
+    z-index: 150;
+    width: min(100% - 48px, 1900px);
+    height: 76px;
+    margin: 0 auto 18px;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 20px;
+    background: rgba(0,0,0,.72);
+    overflow: hidden;
+    box-shadow: 0 18px 54px rgba(0,0,0,.42);
+}
+
 .header-ticker {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
+    position: relative;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
     pointer-events: none;
 }
@@ -148,7 +199,7 @@ button {
     white-space: nowrap;
     font-family: "Geist Pixel", monospace;
     letter-spacing: 2px;
-    color: rgba(255,255,255,.78);
+    color: rgba(255,255,255,.62);
     animation-timing-function: linear;
     animation-iteration-count: infinite;
     animation-duration: var(--ticker-speed);
@@ -165,7 +216,7 @@ button {
     top: 24px;
     right: 100%;
     font-size: 1.15rem;
-    color: rgba(255,255,255,.9);
+    color: rgba(255,255,255,.82);
     animation-name: animeplexTickerRight;
 }
 
@@ -741,5 +792,45 @@ body.reader-active .blocks-side-rail {
 
     .reader-bottom-bar .reader-chapter-select {
         max-width: min(82vw, 320px);
+    }
+}
+
+/* ================= HEADER RESPONSIVE RESTORE ================= */
+
+@media (max-width: 700px) {
+    .search-layer {
+        min-height: 126px;
+        height: auto;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center;
+        gap: 12px;
+        padding: 14px;
+    }
+
+    .landing-brand {
+        align-self: flex-start;
+    }
+
+    .search-layer .header-center,
+    .search-layer .landing-search {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .ghost-text {
+        max-width: 70vw;
+        font-size: .68rem;
+        opacity: .5;
+    }
+
+    .ghost-text-center,
+    .ghost-text-low {
+        display: none;
+    }
+
+    .ticker-layer {
+        width: calc(100% - 20px);
+        border-radius: 14px;
     }
 }

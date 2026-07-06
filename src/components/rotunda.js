@@ -127,6 +127,7 @@ export class Rotunda {
         let touchStartX = null;
         let touchStartY = null;
         let touchMoved = false;
+        let isRotundaHovered = false;
 
         const setActiveCard = index => {
             activeIndex = normalizeIndex(index, cardButtons.length);
@@ -149,6 +150,38 @@ export class Rotunda {
         const moveBy = direction => {
             setActiveCard(activeIndex + direction);
         };
+
+        const isTypingTarget = target => {
+            if (!(target instanceof Element)) return false;
+            const tagName = target.tagName.toLowerCase();
+            return tagName === "input" ||
+                tagName === "textarea" ||
+                tagName === "select" ||
+                target.isContentEditable ||
+                Boolean(target.closest("[contenteditable='true']"));
+        };
+
+        const handleRotundaKeydown = event => {
+            if (!isRotundaHovered || isTypingTarget(event.target)) return;
+
+            const direction = event.key === "ArrowLeft" ? -1 : event.key === "ArrowRight" ? 1 : 0;
+            if (!direction) return;
+
+            // Keyboard coverflow movement is hover-scoped so page/search arrow-key behavior
+            // stays untouched until the user is intentionally over the rotunda showcase.
+            event.preventDefault();
+            moveBy(direction);
+        };
+
+        container.addEventListener("pointerenter", () => {
+            isRotundaHovered = true;
+        });
+
+        container.addEventListener("pointerleave", () => {
+            isRotundaHovered = false;
+        });
+
+        window.addEventListener("keydown", handleRotundaKeydown);
 
         for (const [index, card] of cards.entries()) {
             const button = document.createElement("button");
