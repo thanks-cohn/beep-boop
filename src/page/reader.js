@@ -1,6 +1,7 @@
 import { Storage } from "../storage/storage.js";
 import { resolveManifest } from "../storage/manifest_resolver.js";
 import fetchData from "../data/fetch.json";
+import { getAdsByPlacement, renderAdSlot } from "../components/ads.js";
 
 function getWorkRecord(workSlug) {
     return (fetchData.works || []).find(work => work.slug === workSlug);
@@ -23,12 +24,12 @@ function chapterLabel(chapter) {
         .replaceAll("/", " / ");
 }
 
-function buildReaderTopBar(source, work, chapter) {
+function buildReaderNavBar(source, work, chapter, options = {}) {
     const chapters = getChapterList(work);
     const currentIndex = chapters.indexOf(chapter);
 
     const homeBar = document.createElement("div");
-    homeBar.className = "reader-home-bar";
+    homeBar.className = ["reader-home-bar", options.className].filter(Boolean).join(" ");
 
     const homeButton = document.createElement("button");
     homeButton.className = "reader-home-button";
@@ -111,6 +112,22 @@ function buildReaderTopBar(source, work, chapter) {
     return homeBar;
 }
 
+function buildReaderTopBar(source, work, chapter) {
+    return buildReaderNavBar(source, work, chapter);
+}
+
+function getBetweenReaderPagesAd() {
+    return getAdsByPlacement("between-reader-pages")[0] || null;
+}
+
+function shouldInsertReaderAd(ad, pageNumber, totalPages) {
+    const everyPages = Number(ad?.everyPages || 0);
+
+    return everyPages > 0 &&
+        pageNumber < totalPages &&
+        pageNumber % everyPages === 0;
+}
+
 
 function installReaderChromeAutohide(bar) {
     let hideTimer = null;
@@ -167,6 +184,8 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
     anchor.id = "chapter-start";
     wrapper.appendChild(anchor);
 
+    const betweenPagesAd = getBetweenReaderPagesAd();
+
     for (let i = 1; i <= manifest.pages; i++) {
         const img = document.createElement("img");
 
@@ -194,7 +213,20 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
             `${String(i).padStart(manifest.padding, "0")}.${manifest.extension}`;
 
         wrapper.appendChild(img);
+
+        if (shouldInsertReaderAd(betweenPagesAd, i, manifest.pages)) {
+            const adSlot = renderAdSlot(betweenPagesAd);
+
+            if (adSlot) {
+                wrapper.appendChild(adSlot);
+            }
+        }
     }
+
+    const bottomReaderBar = buildReaderNavBar(source, work, chapter, {
+        className: "reader-bottom-bar"
+    });
+    wrapper.appendChild(bottomReaderBar);
 
     root.replaceChildren(wrapper);
 

@@ -633,3 +633,68 @@ body.reader-active .blocks-side-rail {
     display: block !important;
     color-scheme: dark;
 }
+
+/* =========================
+   JSON ADVERTISEMENTS
+   ========================= */
+
+.reader-ad-slot {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 28px 12px;
+    background: #050505;
+}
+
+.reader-ad-inner {
+    width: min(100%, 970px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 90px;
+}
+
+.reader-bottom-bar {
+    position: static;
+    margin-top: 28px;
+    border-top: 1px solid var(--border);
+    border-bottom: 0;
+    transform: none !important;
+    opacity: 1 !important;
+}
+
+.site-ad-slot {
+    position: relative;
+    z-index: 100;
+}
+
+@media (max-width: 700px) {
+    .reader-ad-slot {
+        padding: 22px 8px;
+    }
+
+    .reader-bottom-bar {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        justify-items: center;
+        padding: 12px 8px 20px;
+    }
+
+    .reader-bottom-bar .reader-bar-left,
+    .reader-bottom-bar .reader-bar-middle,
+    .reader-bottom-bar .reader-bar-right {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .reader-bottom-bar .reader-home-button,
+    .reader-bottom-bar .reader-chapter-select {
+        padding: 6px 10px;
+        font-size: 0.82rem;
+    }
+
+    .reader-bottom-bar .reader-chapter-select {
+        max-width: min(82vw, 320px);
+    }
+}
