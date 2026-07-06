@@ -1,7 +1,76 @@
 import { Rotunda } from "../components/rotunda.js";
 import { Search } from "../components/search.js";
 import { Blocks } from "../components/blocks.js";
+import headerWelcomeImage from "../data/header_welcome_image.json";
+import textBehind from "../data/text_behind.json";
 
+
+const HEADER_IMAGE_INDEX_KEY = "animeplex.headerWelcomeImageIndex";
+
+function getNextHeaderWelcomeImage() {
+    const images = Array.isArray(headerWelcomeImage.images) ? headerWelcomeImage.images.filter(Boolean) : [];
+    if (!images.length) return "";
+
+    try {
+        const rawIndex = Number.parseInt(window.localStorage.getItem(HEADER_IMAGE_INDEX_KEY) || "0", 10);
+        const currentIndex = Number.isFinite(rawIndex) ? rawIndex % images.length : 0;
+        const normalizedIndex = currentIndex < 0 ? 0 : currentIndex;
+
+        window.localStorage.setItem(
+            HEADER_IMAGE_INDEX_KEY,
+            String((normalizedIndex + 1) % images.length)
+        );
+
+        return images[normalizedIndex];
+    } catch (error) {
+        console.warn("Header welcome image rotation unavailable.", error);
+        return images[0];
+    }
+}
+
+function startSiteGhostText() {
+    const layer = document.querySelector(".site-ghost-text-layer");
+    if (!layer) return;
+
+    const phrases = Array.isArray(textBehind.phrases) ? textBehind.phrases.filter(Boolean) : [];
+    if (!phrases.length) return;
+
+    const slots = [
+        { x: 8, y: 9 }, { x: 38, y: 7 }, { x: 68, y: 12 },
+        { x: 14, y: 29 }, { x: 48, y: 27 }, { x: 76, y: 34 },
+        { x: 7, y: 52 }, { x: 36, y: 55 }, { x: 64, y: 50 },
+        { x: 18, y: 76 }, { x: 53, y: 80 }, { x: 81, y: 72 }
+    ];
+    let phraseIndex = 0;
+    let slotIndex = 0;
+
+    const emitPhrase = () => {
+        if (document.body.classList.contains("reader-active")) return;
+
+        const burstCount = 1 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < burstCount; i++) {
+            const slot = slots[slotIndex % slots.length];
+            slotIndex += 1 + Math.floor(Math.random() * 2);
+
+            const item = document.createElement("span");
+            item.className = "site-ghost-text";
+            item.textContent = phrases[phraseIndex % phrases.length];
+            phraseIndex += 1;
+
+            item.style.left = `${Math.min(86, Math.max(4, slot.x + (Math.random() * 8 - 4)))}vw`;
+            item.style.top = `${Math.min(88, Math.max(6, slot.y + (Math.random() * 7 - 3.5)))}vh`;
+            item.style.setProperty("--ghost-drift-x", `${Math.random() * 48 - 24}px`);
+            item.style.setProperty("--ghost-drift-y", `${Math.random() * 28 - 14}px`);
+            item.style.setProperty("--ghost-life", `${9000 + Math.random() * 5500}ms`);
+
+            layer.appendChild(item);
+            item.addEventListener("animationend", () => item.remove(), { once: true });
+        }
+    };
+
+    emitPhrase();
+    window.setInterval(emitPhrase, 2200);
+}
 
 async function startHeaderTicker() {
     const ticker = document.getElementById("header-ticker-track");
@@ -61,21 +130,20 @@ export class Landing {
 
         document.body.classList.remove("reader-active");
 
+        const welcomeImageUrl = getNextHeaderWelcomeImage();
+
         container.innerHTML = `
         <div class="app-root">
-            <header class="search-layer">
-                <div class="ghost-text-layer" aria-hidden="true">
-                    <span class="ghost-text ghost-text-left">find the next obsession</span>
-                    <span class="ghost-text ghost-text-center">pages turning in the dark</span>
-                    <span class="ghost-text ghost-text-right">one search opens a world</span>
-                    <span class="ghost-text ghost-text-low">new chapters drift closer</span>
-                </div>
+            <div class="site-ghost-text-layer" aria-hidden="true"></div>
 
+            <header class="landing-header">
                 <a class="landing-brand" href="/" aria-label="Animeplex home">ANIMEPLEX</a>
 
-                <div class="header-center">
-                    <div class="landing-search"></div>
+                <div class="header-welcome-image" aria-hidden="true">
+                    ${welcomeImageUrl ? `<img src="${welcomeImageUrl}" alt="" loading="eager" decoding="async" />` : ""}
                 </div>
+
+                <div class="landing-search"></div>
             </header>
 
             <section class="rotunda-layer">
@@ -91,6 +159,10 @@ export class Landing {
             <section id="blocks-root"></section>
         </div>
         `;
+
+        startSiteGhostText();
+        const welcomeImage = container.querySelector(".header-welcome-image img");
+        welcomeImage?.addEventListener("error", () => welcomeImage.remove(), { once: true });
 
         await safeStart("search", Search.start);
         await safeStart("rotunda", Rotunda.start);

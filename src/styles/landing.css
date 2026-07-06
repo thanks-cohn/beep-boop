@@ -42,19 +42,65 @@ button {
 
 /* ================= HEADER / SEARCH ================= */
 
-.search-layer {
+.app-root {
+    position: relative;
+    isolation: isolate;
+}
+
+.site-ghost-text-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+    user-select: none;
+}
+
+.site-ghost-text {
+    position: absolute;
+    display: block;
+    max-width: min(520px, 42vw);
+    white-space: nowrap;
+    font-family: "Geist Pixel", monospace;
+    font-size: clamp(.72rem, 1.18vw, 1.18rem);
+    letter-spacing: .24em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.105);
+    text-shadow: 0 0 24px rgba(255,255,255,.14);
+    transform: translate3d(0, 0, 0);
+    animation: siteGhostWhisper var(--ghost-life, 12000ms) ease-in-out forwards;
+    will-change: opacity, transform;
+}
+
+@keyframes siteGhostWhisper {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 10px, 0) scale(.98);
+    }
+    18% {
+        opacity: .5;
+    }
+    74% {
+        opacity: .36;
+    }
+    100% {
+        opacity: 0;
+        transform: translate3d(var(--ghost-drift-x, 18px), var(--ghost-drift-y, -10px), 0) scale(1.03);
+    }
+}
+
+.landing-header {
     position: relative;
     z-index: 5000;
-    min-height: 86px;
-    height: 86px;
-    display: flex;
-    justify-content: space-between;
+    min-height: 112px;
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(180px, 420px) minmax(280px, 1fr);
     align-items: center;
     gap: 24px;
-    padding: 0 32px;
+    padding: 18px 32px;
     background:
-        radial-gradient(circle at 52% 0%, rgba(255,255,255,.08), transparent 34%),
-        rgba(0,0,0,0.74);
+        radial-gradient(circle at 50% 0%, rgba(255,255,255,.10), transparent 38%),
+        linear-gradient(180deg, rgba(0,0,0,.88), rgba(0,0,0,.68));
     border-bottom: 1px solid var(--border);
     overflow: visible;
     isolation: isolate;
@@ -63,6 +109,7 @@ button {
 .landing-brand {
     position: relative;
     z-index: 5030;
+    justify-self: start;
     flex: 0 0 auto;
     font-family: "Geist Pixel", monospace;
     font-size: clamp(1.35rem, 2.5vw, 2.25rem);
@@ -73,45 +120,34 @@ button {
     text-shadow: 0 0 18px rgba(255,255,255,.28), 0 3px 18px rgba(0,0,0,.9);
 }
 
-.ghost-text-layer {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    overflow: hidden;
-    pointer-events: none;
-    user-select: none;
-}
-
-.ghost-text {
-    position: absolute;
-    display: block;
-    max-width: 38vw;
-    white-space: nowrap;
-    font-family: "Geist Pixel", monospace;
-    font-size: clamp(.74rem, 1.4vw, 1.12rem);
-    letter-spacing: .24em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,.13);
-    text-shadow: 0 0 22px rgba(255,255,255,.12);
-    animation: ghostWhisper 8s ease-in-out infinite alternate;
-}
-
-.ghost-text-left { left: 16%; top: 12px; animation-delay: -1.5s; }
-.ghost-text-center { left: 43%; top: 31px; opacity: .72; animation-delay: -4s; }
-.ghost-text-right { right: 4%; top: 8px; animation-delay: -2.6s; }
-.ghost-text-low { left: 30%; bottom: 9px; opacity: .58; animation-delay: -6s; }
-
-@keyframes ghostWhisper {
-    from { transform: translate3d(-8px, 0, 0); opacity: .32; }
-    to { transform: translate3d(10px, -2px, 0); opacity: .7; }
-}
-
-.search-layer .header-center,
-.search-layer .landing-search {
-    width: 520px;
-    max-width: min(520px, calc(100vw - 64px));
+.header-welcome-image {
     position: relative;
     z-index: 5030;
+    justify-self: center;
+    width: min(100%, 420px);
+    height: 76px;
+    border: 1px solid rgba(255,255,255,.16);
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(255,255,255,.05);
+    box-shadow: 0 16px 42px rgba(0,0,0,.36);
+}
+
+.header-welcome-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: .76;
+    filter: saturate(.9) contrast(1.08);
+}
+
+.landing-header .landing-search {
+    width: 520px;
+    max-width: 100%;
+    position: relative;
+    z-index: 5030;
+    justify-self: end;
 }
 
 .search-box {
@@ -126,7 +162,7 @@ button {
     border: 1px solid rgba(255,255,255,.28);
     border-radius: 999px;
     outline: none;
-    background: rgba(0,0,0,.76);
+    background: rgba(0,0,0,.82);
     color: white;
     padding: 0 18px;
     box-shadow: 0 8px 34px rgba(0,0,0,.5);
@@ -168,7 +204,7 @@ button {
 
 .ticker-layer {
     position: relative;
-    z-index: 150;
+    z-index: 1500;
     width: min(100% - 48px, 1900px);
     height: 76px;
     margin: 0 auto 18px;
@@ -241,7 +277,7 @@ button {
 
 .rotunda-layer {
     position: relative;
-    z-index: 100;
+    z-index: 1000;
     width: 100%;
     background: #161616;
     overflow: visible;
@@ -259,7 +295,7 @@ button {
 
 #blocks-root {
 position: relative;
-z-index: 200;
+z-index: 1000;
 width: 100%;
 padding: 12px 24px 32px;
 }
@@ -335,6 +371,10 @@ body.reader-active #blocks-center {
 
 body.reader-active #blocks-reader {
     display: block;
+}
+
+body.reader-active .site-ghost-text-layer {
+    display: none;
 }
 
 body.reader-active,
@@ -436,14 +476,30 @@ display: block;
         padding: 14px;
     }
 
-    .search-layer {
-        padding: 0 14px;
+    .landing-header {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        min-height: 0;
+        padding: 16px 14px;
     }
 
-    .search-layer .header-center,
-    .search-layer .landing-search {
+    .landing-brand,
+    .landing-header .landing-search,
+    .header-welcome-image {
+        justify-self: stretch;
+    }
+
+    .landing-brand {
+        text-align: center;
+    }
+
+    .landing-header .landing-search {
         width: 100%;
         max-width: 100%;
+    }
+
+    .header-welcome-image {
+        height: 58px;
     }
 }
 

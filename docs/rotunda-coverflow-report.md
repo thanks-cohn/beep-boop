@@ -128,3 +128,44 @@ Affected files:
 - `src/styles/landing.css`
 - `src/components/rotunda.js`
 - `docs/rotunda-coverflow-report.md`
+
+## 15. Header restoration, welcome image rotation, and site-wide ghost text update
+
+### Investigation: why the header title/search became unreliable
+
+The top landing markup had regressed into a `search-layer` that mixed real header controls with a decorative `ghost-text-layer`. The `ANIMEPLEX` brand still existed as `.landing-brand`, and the search component still mounted into `.landing-search`, so this was not a data/index failure. The failure mode was layout/layering: decorative header text, the header control mount, and later landing regions were all sharing the same small top area instead of a clear three-zone header region. The old stylesheet also retained duplicate/de-dupe rules for prior brand markup and a malformed duplicate `#blocks-root` selector, which made the top structure harder to reason about and increased the chance that real controls would be obscured or visually displaced by surrounding landing layers.
+
+### Restored header region
+
+`src/page/landing.js` now renders a dedicated `.landing-header` above the rotunda. It has three explicit zones:
+
+- left: the `ANIMEPLEX` home link
+- center: the future-replaceable welcome image
+- right: the existing `.landing-search` mount used by `Search.start()`
+
+`src/styles/landing.css` gives this header a high UI z-index, isolates it from decorative layers, and keeps the brand/search/welcome image above the ghost text, rotunda, ticker, and background effects. The mobile media query collapses the header into a safe single-column stack so the title and search remain visible on narrow screens.
+
+### `header_welcome_image.json`
+
+`src/data/header_welcome_image.json` contains an `images` array of public image URLs. `Landing.start()` imports that JSON, reads the next URL by using the `animeplex.headerWelcomeImageIndex` localStorage key, then immediately stores the next index. This makes refreshes advance sequentially in order and wrap back to the first image after the last image. If localStorage is unavailable, the first configured image is used as a safe fallback. If the image fails to load, the broken image element is removed and the header layout remains intact.
+
+### `text_behind.json` and ghost text behavior
+
+`src/data/text_behind.json` contains forty short atmospheric phrases. `Landing.start()` imports the file and starts a site-wide `.site-ghost-text-layer` that emits phrases in JSON order. Placement uses a rotating set of viewport slots with small jitter, so bursts can feel alive while still staying spaced apart and avoiding heavy bunching. Each phrase removes itself after its fade/drift animation ends, and emission loops forever by wrapping the phrase index.
+
+The ghost layer is fixed, low-opacity, and `pointer-events: none`, so it cannot intercept clicks. Real UI regions keep higher z-indexes than the ghost layer, including the restored header, rotunda cards/controls, ticker, buttons, links, and landing blocks.
+
+### Reader protection
+
+Reader mode is protected in two ways. Direct reader pages do not render the landing app/ghost layer at all. For reader sessions opened from the landing page, `renderManifestInto()` adds `body.reader-active`; CSS hides `.site-ghost-text-layer` in that state and keeps reader containers/pages on an opaque dark background, so decorative text does not appear behind actual manga/comic page images.
+
+### Verification
+
+- Ran `npm run build` successfully.
+- Served the app with `npm run dev -- --host 127.0.0.1` and inspected the generated landing modules over HTTP.
+- Reviewed desktop CSS to confirm the restored three-column header places title left, welcome image center, and search right.
+- Reviewed mobile CSS to confirm the header stacks safely and keeps the search full-width.
+- Reviewed layering CSS to confirm the ghost layer is non-interactive and below real UI.
+- Reviewed reader CSS/JS to confirm reader mode hides the ghost layer and uses opaque reader backgrounds.
+- Confirmed rotunda code was not redesigned; existing arrows, click-to-open, reflection CSS hook, swipe behavior, and hover-scoped keyboard behavior remain in place.
+- Confirmed the ticker remains after the rotunda in the landing markup.
