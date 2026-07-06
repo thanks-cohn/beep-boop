@@ -2,6 +2,7 @@ import advertisementConfig from "../data/advertisement.json";
 
 const loadedProviderScripts = new Set();
 const delegateCHHosts = new Set();
+const PAGE_AD_OVERLAY_ID = "site-ad-overlay-root";
 
 function currentDevice() {
     return window.matchMedia("(max-width: 700px)").matches ? "mobile" : "desktop";
@@ -81,6 +82,26 @@ function serve(ad) {
     }
 }
 
+function ensurePageAdOverlay() {
+    let overlay = document.getElementById(PAGE_AD_OVERLAY_ID);
+
+    if (!overlay) {
+        overlay = document.createElement("div");
+        overlay.id = PAGE_AD_OVERLAY_ID;
+        overlay.className = "site-ad-overlay-root";
+        overlay.setAttribute("aria-label", "Advertisement overlay layer");
+        document.body.appendChild(overlay);
+    }
+
+    return overlay;
+}
+
+function placementLayerClass(placement) {
+    return placement === "desktop-video-slider"
+        ? "site-ad-layer site-ad-layer-video-slider"
+        : "site-ad-layer site-ad-layer-page";
+}
+
 export function getAdsByPlacement(placement) {
     return normalizeAds().filter(ad => ad.placement === placement && isEnabledAd(ad));
 }
@@ -111,6 +132,8 @@ export function renderAdSlot(ad, extraClassName = "") {
 }
 
 export function installPageAdvertisements() {
+    const overlay = ensurePageAdOverlay();
+
     for (const placement of [
         "desktop-video-slider",
         "desktop-fullpage-interstitial",
@@ -119,7 +142,11 @@ export function installPageAdvertisements() {
         for (const ad of getAdsByPlacement(placement)) {
             const slot = renderAdSlot(ad, `site-ad-slot site-ad-${placement}`);
             if (slot) {
-                document.body.appendChild(slot);
+                const layer = document.createElement("div");
+                layer.className = placementLayerClass(placement);
+                layer.dataset.adPlacement = placement;
+                layer.appendChild(slot);
+                overlay.appendChild(layer);
                 debug(ad, "page advertisement inserted", placement);
             }
         }

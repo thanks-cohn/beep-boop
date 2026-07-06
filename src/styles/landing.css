@@ -193,10 +193,11 @@ button {
     z-index: 100;
     width: 100%;
     background: #161616;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .landing-rotunda,
+.rotunda-scroll-viewport,
 .rotunda-track,
 .rotunda-card {
     position: relative;
@@ -665,7 +666,51 @@ body.reader-active .blocks-side-rail {
 
 .site-ad-slot {
     position: relative;
-    z-index: 100;
+    z-index: 1;
+}
+
+.site-ad-overlay-root {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    pointer-events: none;
+    overflow: visible;
+    isolation: isolate;
+}
+
+.site-ad-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.site-ad-layer-page {
+    z-index: 1;
+}
+
+.site-ad-layer-video-slider {
+    z-index: 2;
+}
+
+.site-ad-layer .site-ad-slot {
+    pointer-events: auto;
+}
+
+.site-ad-desktop-video-slider {
+    position: relative;
+    z-index: 1;
+    width: auto;
+    min-width: 0;
+    padding: 0;
+    background: transparent;
+    overflow: visible;
+}
+
+.site-ad-desktop-video-slider .reader-ad-inner {
+    width: auto;
+    min-height: 0;
+    overflow: visible;
 }
 
 @media (max-width: 700px) {

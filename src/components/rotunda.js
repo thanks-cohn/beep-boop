@@ -4,6 +4,9 @@ import rotunda from "../data/rotunda.json";
 import storage from "../data/storage.json";
 import "../styles/rotunda.css";
 
+const ROTUNDA_SCROLL_STEP = 18;
+const ROTUNDA_SCROLL_INTERVAL_MS = 16;
+
 function openReader(card) {
     window.dispatchEvent(new CustomEvent("open-reader", {
         detail: {
@@ -12,6 +15,81 @@ function openReader(card) {
             chapter: card.chapter
         }
     }));
+}
+
+function installRotundaControls(container, scroller) {
+    let scrollTimer = null;
+    let activeDirection = 0;
+
+    const stopScrolling = () => {
+        activeDirection = 0;
+
+        if (scrollTimer) {
+            window.clearInterval(scrollTimer);
+            scrollTimer = null;
+        }
+    };
+
+    const scrollOnce = direction => {
+        scroller.scrollBy({
+            left: direction * 280,
+            behavior: "smooth"
+        });
+    };
+
+    const startScrolling = direction => {
+        stopScrolling();
+        activeDirection = direction;
+        scrollOnce(direction);
+
+        scrollTimer = window.setInterval(() => {
+            if (!activeDirection) return;
+            scroller.scrollBy({
+                left: activeDirection * ROTUNDA_SCROLL_STEP,
+                behavior: "auto"
+            });
+        }, ROTUNDA_SCROLL_INTERVAL_MS);
+    };
+
+    const controls = document.createElement("div");
+    controls.className = "rotunda-controls";
+    controls.setAttribute("aria-label", "Rotunda navigation");
+
+    const makeArrow = (direction, label, glyph) => {
+        const button = document.createElement("button");
+        button.className = `rotunda-arrow rotunda-arrow-${direction < 0 ? "left" : "right"}`;
+        button.type = "button";
+        button.setAttribute("aria-label", label);
+        button.textContent = glyph;
+
+        button.addEventListener("click", event => {
+            event.preventDefault();
+            if (event.detail === 0) {
+                scrollOnce(direction);
+            }
+        });
+        button.addEventListener("pointerdown", event => {
+            event.preventDefault();
+            button.setPointerCapture?.(event.pointerId);
+            startScrolling(direction);
+        });
+        button.addEventListener("pointerup", stopScrolling);
+        button.addEventListener("pointercancel", stopScrolling);
+        button.addEventListener("pointerleave", stopScrolling);
+
+        return button;
+    };
+
+    controls.append(
+        makeArrow(-1, "Scroll rotunda left", "‹"),
+        makeArrow(1, "Scroll rotunda right", "›")
+    );
+    container.appendChild(controls);
+
+    window.addEventListener("blur", stopScrolling);
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) stopScrolling();
+    });
 }
 
 export class Rotunda {
@@ -63,6 +141,9 @@ export class Rotunda {
 
         console.log(`Rotunda loaded ${cards.length} works.`);
 
+        const viewport = document.createElement("div");
+        viewport.className = "rotunda-scroll-viewport";
+
         const track = document.createElement("div");
         track.className = "rotunda-track";
 
@@ -98,6 +179,8 @@ export class Rotunda {
             track.appendChild(button);
         }
 
-        container.replaceChildren(track);
+        viewport.appendChild(track);
+        container.replaceChildren(viewport);
+        installRotundaControls(container, viewport);
     }
 }
