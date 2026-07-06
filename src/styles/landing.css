@@ -927,3 +927,42 @@ body.reader-active .blocks-side-rail {
         border-radius: 14px;
     }
 }
+/* HARD FIX: desktop fullpage interstitial placeholder must not cover UI */
+.site-ad-desktop-fullpage-interstitial {
+    position: absolute !important;
+    width: 0 !important;
+    height: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    background: transparent !important;
+    border: 0 !important;
+    pointer-events: none !important;
+    z-index: -1 !important;
+}
+
+.site-ad-desktop-fullpage-interstitial > * {
+    pointer-events: none !important;
+}
+
+/* HARD FIX: desktop fullpage interstitial placeholder must not cover UI */
+.site-ad-desktop-fullpage-interstitial {
+    position: absolute !important;
+    width: 0 !important;
+    height: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    background: transparent !important;
+    border: 0 !important;
+    pointer-events: none !important;
+    z-index: -1 !important;
+}
+
+.site-ad-desktop-fullpage-interstitial > * {
+    pointer-events: none !important;
+}
