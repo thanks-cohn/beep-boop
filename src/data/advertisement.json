@@ -1,6 +1,6 @@
 [
   {
-    "id": "between-reader-pages",
+    "id": "between-reader-pages-desktop",
     "enabled": true,
     "placement": "between-reader-pages",
     "providerScript": "https://a.magsrv.com/ad-provider.js",
@@ -8,8 +8,21 @@
     "zoneId": "5865344",
     "delegateCHHost": "https://s.magsrv.com",
     "everyPages": 3,
-    "devices": ["desktop", "mobile"],
+    "repeatCount": 3,
+    "devices": ["desktop"],
     "debug": true
+  },
+  {
+    "id": "between-reader-pages-mobile",
+    "enabled": true,
+    "placement": "between-reader-pages",
+    "providerScript": "https://a.magsrv.com/ad-provider.js",
+    "className": "eas6a97888e2",
+    "zoneId": "5865344",
+    "delegateCHHost": "https://s.magsrv.com",
+    "everyPages": 3,
+    "repeatCount": 1,
+    "devices": ["mobile"]
   },
   {
     "id": "desktop-video-slider",
@@ -23,7 +36,7 @@
   },
   {
     "id": "desktop-fullpage-interstitial",
-    "enabled": true,
+    "enabled": false,
     "placement": "desktop-fullpage-interstitial",
     "providerScript": "https://a.pemsrv.com/ad-provider.js",
     "className": "eas6a97888e35",
@@ -33,7 +46,7 @@
   },
   {
     "id": "mobile-fullpage-interstitial",
-    "enabled": true,
+    "enabled": false,
     "placement": "mobile-fullpage-interstitial",
     "providerScript": "https://a.pemsrv.com/ad-provider.js",
     "className": "eas6a97888e33",

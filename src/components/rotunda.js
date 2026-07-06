@@ -14,6 +14,65 @@ function openReader(card) {
     }));
 }
 
+function installRotundaArrows(container) {
+    const stepPx = 180;
+    const holdSpeedPxPerSecond = 360;
+    let direction = 0;
+    let animationFrame = 0;
+    let lastTime = 0;
+
+    function stopHold() {
+        direction = 0;
+        lastTime = 0;
+        if (animationFrame) {
+            cancelAnimationFrame(animationFrame);
+            animationFrame = 0;
+        }
+    }
+
+    function animateHold(time) {
+        if (!direction) return;
+        if (!lastTime) lastTime = time;
+
+        const delta = Math.min(48, time - lastTime);
+        lastTime = time;
+        container.scrollLeft += direction * holdSpeedPxPerSecond * (delta / 1000);
+        animationFrame = requestAnimationFrame(animateHold);
+    }
+
+    function createArrow(className, label, arrowDirection) {
+        const button = document.createElement("button");
+        button.className = `rotunda-arrow ${className}`;
+        button.type = "button";
+        button.setAttribute("aria-label", label);
+        button.textContent = arrowDirection < 0 ? "‹" : "›";
+
+        button.addEventListener("click", () => {
+            container.scrollBy({ left: arrowDirection * stepPx, behavior: "smooth" });
+        });
+
+        button.addEventListener("pointerdown", (event) => {
+            event.preventDefault();
+            direction = arrowDirection;
+            lastTime = 0;
+            if (!animationFrame) {
+                animationFrame = requestAnimationFrame(animateHold);
+            }
+        });
+
+        for (const eventName of ["pointerup", "pointerleave", "pointercancel"]) {
+            button.addEventListener(eventName, stopHold);
+        }
+
+        return button;
+    }
+
+    container.append(
+        createArrow("rotunda-arrow-left", "Slide rotunda left", -1),
+        createArrow("rotunda-arrow-right", "Slide rotunda right", 1)
+    );
+}
+
 export class Rotunda {
     static async start() {
         const container = document.querySelector(".landing-rotunda");
@@ -99,5 +158,6 @@ export class Rotunda {
         }
 
         container.replaceChildren(track);
+        installRotundaArrows(container);
     }
 }

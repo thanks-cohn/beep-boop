@@ -77,8 +77,15 @@ function serve(ad) {
         (window.AdProvider = window.AdProvider || []).push({ serve: {} });
         debug(ad, "serve requested");
     } catch (error) {
-        debug(ad, "serve request failed", error);
+        if (ad?.debug) console.debug(error);
     }
+}
+
+function createIns(ad) {
+    const ins = document.createElement("ins");
+    ins.className = String(ad.className);
+    ins.dataset.zoneid = String(ad.zoneId);
+    return ins;
 }
 
 export function getAdsByPlacement(placement) {
@@ -91,21 +98,25 @@ export function renderAdSlot(ad, extraClassName = "") {
     ensureDelegateCH(ad);
     ensureProviderScript(ad);
 
+    const repeatCount = Math.max(1, Number(ad.repeatCount || 1));
     const slot = document.createElement("div");
     slot.className = ["reader-ad-slot", extraClassName].filter(Boolean).join(" ");
     slot.dataset.adId = ad.id || ad.placement || "advertisement";
 
     const inner = document.createElement("div");
-    inner.className = "reader-ad-inner";
+    inner.className = ["reader-ad-inner", repeatCount > 1 ? "reader-ad-grid" : ""].filter(Boolean).join(" ");
 
-    const ins = document.createElement("ins");
-    ins.className = ad.className;
-    ins.dataset.zoneid = String(ad.zoneId);
+    for (let index = 0; index < repeatCount; index++) {
+        inner.appendChild(createIns(ad));
+    }
 
-    inner.appendChild(ins);
     slot.appendChild(inner);
 
-    window.setTimeout(() => serve(ad), 0);
+    window.setTimeout(() => {
+        for (let index = 0; index < repeatCount; index++) {
+            serve(ad);
+        }
+    }, 0);
 
     return slot;
 }
