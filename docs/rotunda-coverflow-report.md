@@ -112,3 +112,19 @@ Testing performed:
 - Verified in CSS that the active card is centered, larger, brighter, highest z-index, and has the strongest glow/reflection.
 - Verified in CSS that clipping is avoided with visible overflow and increased rotunda sizing.
 - Verified in CSS/JS that mobile remains usable through smaller card sizing, hidden far cards, retained button clicks, vertical pan support, and one-card swipe navigation.
+
+## 14. Header identity, ghost layer, ticker placement, and keyboard navigation update
+
+This update restores the real landing header UI above the decorative atmosphere:
+
+- `src/page/landing.js` now renders an explicit `ANIMEPLEX` home brand on the top-left and keeps the existing search mount on the top-right inside the highest header UI layer.
+- The former top ticker role is split into a non-interactive `ghost-text-layer` in the header and a real ticker section placed after the rotunda, so the atmospheric words cannot replace, cover, or intercept the logo/search UI.
+- `src/styles/landing.css` gives the brand and search a higher z-index than the ghost text, keeps the ghost text dim with `pointer-events: none`, and makes the ticker stable underneath the coverflow rotunda before the main columns.
+- `src/components/rotunda.js` adds hover-scoped ArrowLeft/ArrowRight navigation. A window-level keydown listener only moves the coverflow while the pointer is over the rotunda, skips input/search/textarea/select/contenteditable targets, and prevents default only for handled rotunda arrow keys. Existing click arrows and mobile swipe navigation remain unchanged.
+
+Affected files:
+
+- `src/page/landing.js`
+- `src/styles/landing.css`
+- `src/components/rotunda.js`
+- `docs/rotunda-coverflow-report.md`

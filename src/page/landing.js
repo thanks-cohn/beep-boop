@@ -64,9 +64,14 @@ export class Landing {
         container.innerHTML = `
         <div class="app-root">
             <header class="search-layer">
-                <div class="header-ticker" aria-hidden="true">
-                    <div class="header-ticker-track" id="header-ticker-track"></div>
+                <div class="ghost-text-layer" aria-hidden="true">
+                    <span class="ghost-text ghost-text-left">find the next obsession</span>
+                    <span class="ghost-text ghost-text-center">pages turning in the dark</span>
+                    <span class="ghost-text ghost-text-right">one search opens a world</span>
+                    <span class="ghost-text ghost-text-low">new chapters drift closer</span>
                 </div>
+
+                <a class="landing-brand" href="/" aria-label="Animeplex home">ANIMEPLEX</a>
 
                 <div class="header-center">
                     <div class="landing-search"></div>
@@ -75,6 +80,12 @@ export class Landing {
 
             <section class="rotunda-layer">
                 <div class="landing-rotunda"></div>
+            </section>
+
+            <section class="ticker-layer" aria-label="Animeplex updates">
+                <div class="header-ticker">
+                    <div class="header-ticker-track" id="header-ticker-track"></div>
+                </div>
             </section>
 
             <section id="blocks-root"></section>
