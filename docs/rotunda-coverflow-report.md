@@ -133,21 +133,16 @@ Affected files:
 
 ### Investigation: why the header title/search became unreliable
 
-The top landing markup had regressed into a `search-layer` that mixed real header controls with a decorative `ghost-text-layer`. The `ANIMEPLEX` brand still existed as `.landing-brand`, and the search component still mounted into `.landing-search`, so this was not a data/index failure. The failure mode was layout/layering: decorative header text, the header control mount, and later landing regions were all sharing the same small top area instead of a clear three-zone header region. The old stylesheet also retained duplicate/de-dupe rules for prior brand markup and a malformed duplicate `#blocks-root` selector, which made the top structure harder to reason about and increased the chance that real controls would be obscured or visually displaced by surrounding landing layers.
+The top landing markup had regressed into a `search-layer` that mixed real header controls with a decorative `ghost-text-layer`. The `ANIMEPLEX` brand still existed as `.landing-brand`, and the search component still mounted into `.landing-search`, so this was not a data/index failure. The failure mode was layout/layering: decorative header text, the header control mount, and later landing regions were all sharing the same small top area instead of a clear two-zone header region. The old stylesheet also retained duplicate/de-dupe rules for prior brand markup and a malformed duplicate `#blocks-root` selector, which made the top structure harder to reason about and increased the chance that real controls would be obscured or visually displaced by surrounding landing layers.
 
 ### Restored header region
 
-`src/page/landing.js` now renders a dedicated `.landing-header` above the rotunda. It has three explicit zones:
+`src/page/landing.js` now renders a dedicated `.landing-header` above the rotunda. It has two explicit zones:
 
-- left: the `ANIMEPLEX` home link
-- center: the future-replaceable welcome image
+- left: the `Animeplex` home link
 - right: the existing `.landing-search` mount used by `Search.start()`
 
-`src/styles/landing.css` gives this header a high UI z-index, isolates it from decorative layers, and keeps the brand/search/welcome image above the ghost text, rotunda, ticker, and background effects. The mobile media query collapses the header into a safe single-column stack so the title and search remain visible on narrow screens.
-
-### `header_welcome_image.json`
-
-`src/data/header_welcome_image.json` contains an `images` array of public image URLs. `Landing.start()` imports that JSON, reads the next URL by using the `animeplex.headerWelcomeImageIndex` localStorage key, then immediately stores the next index. This makes refreshes advance sequentially in order and wrap back to the first image after the last image. If localStorage is unavailable, the first configured image is used as a safe fallback. If the image fails to load, the broken image element is removed and the header layout remains intact.
+`src/styles/landing.css` gives this header the highest UI z-index, isolates it from decorative layers, and keeps the brand/search above the ghost text, rotunda, ticker, sticky rails, and advertising overlays. The mobile media query collapses the header into a safe single-column stack so the title and search remain visible on narrow screens.
 
 ### `text_behind.json` and ghost text behavior
 
@@ -163,9 +158,17 @@ Reader mode is protected in two ways. Direct reader pages do not render the land
 
 - Ran `npm run build` successfully.
 - Served the app with `npm run dev -- --host 127.0.0.1` and inspected the generated landing modules over HTTP.
-- Reviewed desktop CSS to confirm the restored three-column header places title left, welcome image center, and search right.
+- Reviewed desktop CSS to confirm the restored two-column header places the site name on the left and search on the right above the rotunda.
 - Reviewed mobile CSS to confirm the header stacks safely and keeps the search full-width.
 - Reviewed layering CSS to confirm the ghost layer is non-interactive and below real UI.
 - Reviewed reader CSS/JS to confirm reader mode hides the ghost layer and uses opaque reader backgrounds.
 - Confirmed rotunda code was not redesigned; existing arrows, click-to-open, reflection CSS hook, swipe behavior, and hover-scoped keyboard behavior remain in place.
 - Confirmed the ticker remains after the rotunda in the landing markup.
+
+## 11. Latest header restore and visibility investigation
+
+This pass makes the landing header the first real element inside `.app-root`, directly above `.rotunda-layer`. The header now only contains the Animeplex brand on the left and the `.landing-search` mount on the right, so the Search component from `src/components/search.js` owns the functional search input and results list.
+
+The likely reason the header was unreliable before was not the search index itself. `Search.start()` was mounting into `.landing-search`, but several surrounding layers were competing with the header: the rotunda, ticker, sticky reader/advertising surfaces, old responsive `.search-layer` rules, and a rotating welcome image created a more crowded grid than the requested two-zone header. Some later overlay styles also use extremely high z-index values, which meant the header's previous z-index could still lose in the global stacking order. The restored header is sticky, isolated, first in the landing markup, and assigned a z-index above those overlay layers so it remains the top visible UI surface.
+
+The search bar was also changed from a hover-expanding compact control into a stable full-width field. That makes it easier to see, focus, type into, and use on touch devices. Results remain connected to the existing search index and reader-opening behavior through `src/components/search.js`.

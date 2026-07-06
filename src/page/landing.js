@@ -1,32 +1,8 @@
 import { Rotunda } from "../components/rotunda.js";
 import { Search } from "../components/search.js";
 import { Blocks } from "../components/blocks.js";
-import headerWelcomeImage from "../data/header_welcome_image.json";
 import textBehind from "../data/text_behind.json";
 
-
-const HEADER_IMAGE_INDEX_KEY = "animeplex.headerWelcomeImageIndex";
-
-function getNextHeaderWelcomeImage() {
-    const images = Array.isArray(headerWelcomeImage.images) ? headerWelcomeImage.images.filter(Boolean) : [];
-    if (!images.length) return "";
-
-    try {
-        const rawIndex = Number.parseInt(window.localStorage.getItem(HEADER_IMAGE_INDEX_KEY) || "0", 10);
-        const currentIndex = Number.isFinite(rawIndex) ? rawIndex % images.length : 0;
-        const normalizedIndex = currentIndex < 0 ? 0 : currentIndex;
-
-        window.localStorage.setItem(
-            HEADER_IMAGE_INDEX_KEY,
-            String((normalizedIndex + 1) % images.length)
-        );
-
-        return images[normalizedIndex];
-    } catch (error) {
-        console.warn("Header welcome image rotation unavailable.", error);
-        return images[0];
-    }
-}
 
 function startSiteGhostText() {
     const layer = document.querySelector(".site-ghost-text-layer");
@@ -130,20 +106,13 @@ export class Landing {
 
         document.body.classList.remove("reader-active");
 
-        const welcomeImageUrl = getNextHeaderWelcomeImage();
-
         container.innerHTML = `
         <div class="app-root">
             <div class="site-ghost-text-layer" aria-hidden="true"></div>
 
-            <header class="landing-header">
-                <a class="landing-brand" href="/" aria-label="Animeplex home">ANIMEPLEX</a>
-
-                <div class="header-welcome-image" aria-hidden="true">
-                    ${welcomeImageUrl ? `<img src="${welcomeImageUrl}" alt="" loading="eager" decoding="async" />` : ""}
-                </div>
-
-                <div class="landing-search"></div>
+            <header class="landing-header" aria-label="Animeplex site header">
+                <a class="landing-brand" href="/" aria-label="Animeplex home">Animeplex</a>
+                <div class="landing-search" aria-label="Site search"></div>
             </header>
 
             <section class="rotunda-layer">
@@ -161,9 +130,6 @@ export class Landing {
         `;
 
         startSiteGhostText();
-        const welcomeImage = container.querySelector(".header-welcome-image img");
-        welcomeImage?.addEventListener("error", () => welcomeImage.remove(), { once: true });
-
         await safeStart("search", Search.start);
         await safeStart("rotunda", Rotunda.start);
         await safeStart("blocks", Blocks.start);
