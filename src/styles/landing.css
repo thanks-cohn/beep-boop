@@ -693,6 +693,19 @@ body.reader-active .blocks-side-rail {
     z-index: 2;
 }
 
+.site-ad-layer-video-slider-right,
+.site-ad-layer-video-slider-left {
+    z-index: 3;
+}
+
+.site-ad-layer-video-slider-left {
+    transform: scaleX(-1);
+}
+
+.site-ad-layer-video-slider-left .site-ad-slot {
+    transform: scaleX(-1);
+}
+
 .site-ad-layer .site-ad-slot {
     pointer-events: auto;
 }

@@ -4,8 +4,7 @@ import rotunda from "../data/rotunda.json";
 import storage from "../data/storage.json";
 import "../styles/rotunda.css";
 
-const ROTUNDA_SCROLL_STEP = 18;
-const ROTUNDA_SCROLL_INTERVAL_MS = 16;
+const ROTUNDA_HOLD_INTERVAL_MS = 420;
 
 function openReader(card) {
     window.dispatchEvent(new CustomEvent("open-reader", {
@@ -17,38 +16,27 @@ function openReader(card) {
     }));
 }
 
-function installRotundaControls(container, scroller) {
-    let scrollTimer = null;
+function installRotundaControls(container, stepActiveCard) {
+    let stepTimer = null;
     let activeDirection = 0;
 
-    const stopScrolling = () => {
+    const stopStepping = () => {
         activeDirection = 0;
 
-        if (scrollTimer) {
-            window.clearInterval(scrollTimer);
-            scrollTimer = null;
+        if (stepTimer) {
+            window.clearInterval(stepTimer);
+            stepTimer = null;
         }
     };
 
-    const scrollOnce = direction => {
-        scroller.scrollBy({
-            left: direction * 280,
-            behavior: "smooth"
-        });
-    };
-
-    const startScrolling = direction => {
-        stopScrolling();
+    const startStepping = direction => {
+        stopStepping();
         activeDirection = direction;
-        scrollOnce(direction);
+        stepActiveCard(direction);
 
-        scrollTimer = window.setInterval(() => {
-            if (!activeDirection) return;
-            scroller.scrollBy({
-                left: activeDirection * ROTUNDA_SCROLL_STEP,
-                behavior: "auto"
-            });
-        }, ROTUNDA_SCROLL_INTERVAL_MS);
+        stepTimer = window.setInterval(() => {
+            if (activeDirection) stepActiveCard(activeDirection);
+        }, ROTUNDA_HOLD_INTERVAL_MS);
     };
 
     const controls = document.createElement("div");
@@ -65,30 +53,38 @@ function installRotundaControls(container, scroller) {
         button.addEventListener("click", event => {
             event.preventDefault();
             if (event.detail === 0) {
-                scrollOnce(direction);
+                stepActiveCard(direction);
             }
         });
         button.addEventListener("pointerdown", event => {
             event.preventDefault();
             button.setPointerCapture?.(event.pointerId);
-            startScrolling(direction);
+            startStepping(direction);
         });
-        button.addEventListener("pointerup", stopScrolling);
-        button.addEventListener("pointercancel", stopScrolling);
-        button.addEventListener("pointerleave", stopScrolling);
+        button.addEventListener("pointerup", stopStepping);
+        button.addEventListener("pointercancel", stopStepping);
+        button.addEventListener("pointerleave", stopStepping);
 
         return button;
     };
 
     controls.append(
-        makeArrow(-1, "Scroll rotunda left", "‹"),
-        makeArrow(1, "Scroll rotunda right", "›")
+        makeArrow(-1, "Show previous rotunda work", "‹"),
+        makeArrow(1, "Show next rotunda work", "›")
     );
     container.appendChild(controls);
 
-    window.addEventListener("blur", stopScrolling);
+    window.addEventListener("blur", stopStepping);
     document.addEventListener("visibilitychange", () => {
-        if (document.hidden) stopScrolling();
+        if (document.hidden) stopStepping();
+    });
+}
+
+function centerCard(card) {
+    card.scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+        block: "nearest"
     });
 }
 
@@ -147,11 +143,14 @@ export class Rotunda {
         const track = document.createElement("div");
         track.className = "rotunda-track";
 
-        for (const card of cards) {
+        const cardButtons = [];
+
+        for (const [index, card] of cards.entries()) {
             const button = document.createElement("button");
             button.className = "rotunda-card";
             button.type = "button";
             button.setAttribute("aria-label", `Open ${card.title} volume 1 chapter 1`);
+            button.dataset.rotundaIndex = String(index);
 
             const frame = document.createElement("div");
             frame.className = "rotunda-cover-frame";
@@ -160,6 +159,12 @@ export class Rotunda {
             img.className = "rotunda-cover";
             img.src = card.image;
             img.alt = card.title;
+
+            const reflection = document.createElement("img");
+            reflection.className = "rotunda-cover-reflection";
+            reflection.src = card.image;
+            reflection.alt = "";
+            reflection.setAttribute("aria-hidden", "true");
 
             const overlay = document.createElement("div");
             overlay.className = "rotunda-overlay";
@@ -174,13 +179,32 @@ export class Rotunda {
 
             button.addEventListener("click", () => openReader(card));
 
-            frame.append(img, overlay);
+            frame.append(img, reflection, overlay);
             button.append(frame, title);
             track.appendChild(button);
+            cardButtons.push(button);
         }
+
+        let activeIndex = 0;
+
+        const setActiveCard = (nextIndex, shouldCenter = true) => {
+            if (!cardButtons.length) return;
+            activeIndex = (nextIndex + cardButtons.length) % cardButtons.length;
+
+            cardButtons.forEach((button, index) => {
+                const isActive = index === activeIndex;
+                button.classList.toggle("rotunda-card-active", isActive);
+                button.setAttribute("aria-current", isActive ? "true" : "false");
+            });
+
+            if (shouldCenter) centerCard(cardButtons[activeIndex]);
+        };
+
+        const stepActiveCard = direction => setActiveCard(activeIndex + direction);
 
         viewport.appendChild(track);
         container.replaceChildren(viewport);
-        installRotundaControls(container, viewport);
+        installRotundaControls(container, stepActiveCard);
+        setActiveCard(0, false);
     }
 }

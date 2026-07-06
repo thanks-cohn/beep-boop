@@ -1,233 +1,242 @@
-
 .rotunda-track{
-
     display:flex;
-
     flex-direction:row;
-
-    align-items:flex-end;
-
-    gap:28px;
-
+    align-items:flex-start;
+    gap:34px;
     width:max-content;
-
+    min-height:260px;
     height:100%;
-
-    padding:40px 120px;
-
+    padding:58px 140px 74px;
 }
 
-
-
 .landing-rotunda{
-
     position:relative;
-
     overflow:visible;
-
 }
 
 .rotunda-scroll-viewport{
-
     overflow-x:auto;
-
-    overflow-y:hidden;
-
+    overflow-y:visible;
     scrollbar-width:none;
-
     scroll-behavior:smooth;
-
+    padding-block:16px 28px;
 }
-
-
 
 .rotunda-scroll-viewport::-webkit-scrollbar{
-
     display:none;
-
 }
-
-
 
 .rotunda-card{
-
+    appearance:none;
+    border:0;
+    background:transparent;
+    color:inherit;
+    cursor:pointer;
     flex:0 0 auto;
-
     display:flex;
-
     flex-direction:column;
-
     align-items:center;
-
+    padding:0;
+    position:relative;
+    z-index:1;
+    opacity:.76;
+    transform:scale(1);
+    transform-origin:center top;
+    transition:transform 260ms ease, opacity 260ms ease, filter 260ms ease;
 }
 
+.rotunda-card-active{
+    opacity:1;
+    transform:scale(1.12);
+    z-index:20;
+    filter:drop-shadow(0 0 18px rgba(195,106,255,.34));
+}
 
+.rotunda-cover-frame{
+    position:relative;
+    width:140px;
+    border-radius:10px;
+    overflow:visible;
+    isolation:isolate;
+}
 
 .rotunda-cover{
-
-    width:140px;
-
+    display:block;
+    width:100%;
     height:auto;
-
     border-radius:10px;
-
     box-shadow:0 12px 30px rgba(0,0,0,.45);
-
-    transition:.2s;
-
+    position:relative;
+    z-index:2;
+    transition:transform 220ms ease, box-shadow 260ms ease, filter 260ms ease;
 }
 
-
-
-.rotunda-cover:hover{
-
-    transform:translateY(-8px) scale(1.04);
-
-}
-
-
-
-.rotunda-title{
-
-    margin-top:12px;
-
-    color:white;
-
-    font-weight:700;
-
-    text-align:center;
-
-    max-width:140px;
-
-}
-
-/* ================= ROTUNDA CLICK OVERLAYS ================= */
-
-.rotunda-card {
-    appearance: none;
-    border: 0;
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
-    padding: 0;
-}
-
-.rotunda-cover-frame {
-    position: relative;
-    width: 140px;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 12px 30px rgba(0,0,0,.45);
-}
-
-.rotunda-cover {
-    display: block;
-    width: 100%;
-    height: auto;
-    border-radius: 0;
-    box-shadow: none;
-}
-
-.rotunda-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    gap: 6px;
-    padding: 12px 10px;
-
-    background:
-        linear-gradient(
-            to bottom,
-            rgba(0,0,0,0.05),
-            rgba(0,0,0,0.72)
-        );
-
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 160ms ease, transform 160ms ease;
-}
-
-.rotunda-card:hover .rotunda-overlay,
-.rotunda-card:focus-visible .rotunda-overlay {
-    opacity: 1;
-    transform: translateY(0);
+.rotunda-card-active .rotunda-cover{
+    box-shadow:
+        0 18px 44px rgba(0,0,0,.58),
+        0 0 0 1px rgba(238,210,255,.72),
+        0 0 24px rgba(190,91,255,.5);
 }
 
 .rotunda-card:hover .rotunda-cover,
-.rotunda-card:focus-visible .rotunda-cover {
-    transform: scale(1.04);
+.rotunda-card:focus-visible .rotunda-cover{
+    transform:translateY(-4px) scale(1.03);
 }
 
-.rotunda-overlay-title {
-    color: white;
-    font-weight: 800;
-    font-size: .85rem;
-    line-height: 1.1;
-    text-shadow: 0 2px 8px rgba(0,0,0,.75);
+.rotunda-cover-reflection{
+    position:absolute;
+    left:0;
+    top:calc(100% + 8px);
+    width:100%;
+    height:72px;
+    object-fit:cover;
+    object-position:top;
+    border-radius:10px;
+    transform:scaleY(-1);
+    transform-origin:top center;
+    opacity:.14;
+    filter:blur(4px) brightness(.34) saturate(.7);
+    pointer-events:none;
+    z-index:1;
+    mask-image:linear-gradient(to bottom, rgba(0,0,0,.55), rgba(0,0,0,.2) 38%, transparent 86%);
+    -webkit-mask-image:linear-gradient(to bottom, rgba(0,0,0,.55), rgba(0,0,0,.2) 38%, transparent 86%);
+    mix-blend-mode:screen;
+    transition:opacity 260ms ease, filter 260ms ease, transform 260ms ease;
 }
 
-.rotunda-overlay-action {
-    color: rgba(255,255,255,.86);
-    font-size: .72rem;
-    font-weight: 700;
+.rotunda-cover-frame::after{
+    content:"";
+    position:absolute;
+    left:8%;
+    right:8%;
+    top:calc(100% + 6px);
+    height:72px;
+    background:radial-gradient(ellipse at top, rgba(185,94,255,.18), rgba(0,0,0,.16) 34%, transparent 72%);
+    filter:blur(8px);
+    opacity:.26;
+    pointer-events:none;
+    z-index:0;
 }
 
-.rotunda-card:focus-visible {
-    outline: 2px solid rgba(255,255,255,.85);
-    outline-offset: 6px;
-    border-radius: 12px;
+.rotunda-card-active .rotunda-cover-reflection{
+    opacity:.28;
+    filter:blur(5px) brightness(.46) saturate(.8);
+    transform:scaleY(-1) translateY(-2px);
 }
 
-.rotunda-controls {
-    position: absolute;
-    inset: 0;
-    z-index: 180;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 18px;
-    pointer-events: none;
+.rotunda-card-active .rotunda-cover-frame::after{
+    opacity:.48;
 }
 
-.rotunda-arrow {
-    pointer-events: auto;
-    width: 34px;
-    height: 54px;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,.2);
-    background: rgba(8,8,8,.46);
-    color: rgba(255,255,255,.86);
-    font-size: 2rem;
-    line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 12px 32px rgba(0,0,0,.35);
-    backdrop-filter: blur(10px);
-    transition:
-        background 160ms ease,
-        border-color 160ms ease,
-        color 160ms ease,
-        transform 160ms ease;
+.rotunda-title{
+    margin-top:90px;
+    color:white;
+    font-weight:700;
+    text-align:center;
+    max-width:140px;
+    text-shadow:0 2px 10px rgba(0,0,0,.72);
+}
+
+.rotunda-overlay{
+    position:absolute;
+    inset:0;
+    z-index:3;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    gap:6px;
+    padding:12px 10px;
+    border-radius:10px;
+    background:linear-gradient(to bottom, rgba(0,0,0,0.05), rgba(0,0,0,0.72));
+    opacity:0;
+    transform:translateY(8px);
+    transition:opacity 160ms ease, transform 160ms ease;
+    pointer-events:none;
+}
+
+.rotunda-card:hover .rotunda-overlay,
+.rotunda-card:focus-visible .rotunda-overlay{
+    opacity:1;
+    transform:translateY(0);
+}
+
+.rotunda-overlay-title{
+    color:white;
+    font-weight:800;
+    font-size:.85rem;
+    line-height:1.1;
+    text-shadow:0 2px 8px rgba(0,0,0,.75);
+}
+
+.rotunda-overlay-action{
+    color:rgba(255,255,255,.86);
+    font-size:.72rem;
+    font-weight:700;
+}
+
+.rotunda-card:focus-visible{
+    outline:2px solid rgba(255,255,255,.85);
+    outline-offset:8px;
+    border-radius:12px;
+}
+
+.rotunda-controls{
+    position:absolute;
+    inset:0;
+    z-index:180;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 18px;
+    pointer-events:none;
+}
+
+.rotunda-arrow{
+    pointer-events:auto;
+    width:34px;
+    height:54px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.2);
+    background:rgba(8,8,8,.46);
+    color:rgba(255,255,255,.86);
+    font-size:2rem;
+    line-height:1;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 12px 32px rgba(0,0,0,.35);
+    backdrop-filter:blur(10px);
+    transition:background 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
 }
 
 .rotunda-arrow:hover,
-.rotunda-arrow:focus-visible {
-    background: rgba(20,20,20,.72);
-    border-color: rgba(255,255,255,.36);
-    color: #fff;
-    transform: scale(1.04);
+.rotunda-arrow:focus-visible{
+    background:rgba(20,20,20,.72);
+    border-color:rgba(255,255,255,.36);
+    color:#fff;
+    transform:scale(1.04);
 }
 
-.rotunda-arrow:focus-visible {
-    outline: 2px solid rgba(255,255,255,.72);
-    outline-offset: 3px;
+.rotunda-arrow:focus-visible{
+    outline:2px solid rgba(255,255,255,.72);
+    outline-offset:3px;
 }
 
-@media (max-width: 700px), (pointer: coarse) {
-    .rotunda-controls {
-        display: none;
+@media (max-width:700px), (pointer:coarse){
+    .rotunda-track{
+        gap:24px;
+        padding:42px 56px 66px;
+    }
+
+    .rotunda-card{
+        opacity:.9;
+    }
+
+    .rotunda-card-active{
+        transform:scale(1.06);
+    }
+
+    .rotunda-controls{
+        display:none;
     }
 }

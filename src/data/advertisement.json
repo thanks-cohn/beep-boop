@@ -19,6 +19,7 @@
     "className": "eas6a97888e31",
     "zoneId": "5880066",
     "delegateCHHost": "https://s.magsrv.com",
+    "leftDelayMs": 10000,
     "devices": ["desktop"]
   },
   {

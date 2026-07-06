@@ -3,6 +3,9 @@ import advertisementConfig from "../data/advertisement.json";
 const loadedProviderScripts = new Set();
 const delegateCHHosts = new Set();
 const PAGE_AD_OVERLAY_ID = "site-ad-overlay-root";
+const DESKTOP_VIDEO_SLIDER_PLACEMENT = "desktop-video-slider";
+const DEFAULT_LEFT_VIDEO_SLIDER_DELAY_MS = 10000;
+let leftVideoSliderTimer = null;
 
 function currentDevice() {
     return window.matchMedia("(max-width: 700px)").matches ? "mobile" : "desktop";
@@ -96,10 +99,59 @@ function ensurePageAdOverlay() {
     return overlay;
 }
 
-function placementLayerClass(placement) {
-    return placement === "desktop-video-slider"
-        ? "site-ad-layer site-ad-layer-video-slider"
-        : "site-ad-layer site-ad-layer-page";
+function placementLayerClass(placement, side = "") {
+    if (placement === DESKTOP_VIDEO_SLIDER_PLACEMENT) {
+        return [
+            "site-ad-layer",
+            "site-ad-layer-video-slider",
+            side ? `site-ad-layer-video-slider-${side}` : ""
+        ].filter(Boolean).join(" ");
+    }
+
+    return "site-ad-layer site-ad-layer-page";
+}
+
+function layerKey(placement, side = "") {
+    return [placement, side].filter(Boolean).join(":");
+}
+
+function removeLayer(overlay, placement, side = "") {
+    overlay
+        .querySelectorAll(`[data-ad-layer-key="${layerKey(placement, side)}"]`)
+        .forEach(layer => layer.remove());
+}
+
+function clearLeftVideoSliderTimer() {
+    if (leftVideoSliderTimer) {
+        window.clearTimeout(leftVideoSliderTimer);
+        leftVideoSliderTimer = null;
+    }
+}
+
+function getLeftVideoSliderDelay(ad) {
+    const configuredDelay = ad.leftDelayMs ?? ad.delayedLeftMs ?? ad.appearAfterMs;
+    const delay = Number(configuredDelay);
+
+    return Number.isFinite(delay) && delay >= 0 ? delay : DEFAULT_LEFT_VIDEO_SLIDER_DELAY_MS;
+}
+
+function insertPageAdLayer(overlay, ad, placement, side = "") {
+    const key = layerKey(placement, side);
+    if (overlay.querySelector(`[data-ad-layer-key="${key}"]`)) return null;
+
+    const slot = renderAdSlot(ad, `site-ad-slot site-ad-${placement}${side ? ` site-ad-${placement}-${side}` : ""}`);
+    if (!slot) return null;
+
+    const layer = document.createElement("div");
+    layer.className = placementLayerClass(placement, side);
+    layer.dataset.adPlacement = placement;
+    layer.dataset.adLayerKey = key;
+    if (side) layer.dataset.adSide = side;
+    layer.appendChild(slot);
+    overlay.appendChild(layer);
+
+    debug(ad, "page advertisement inserted", placement, side || "default");
+    return layer;
 }
 
 export function getAdsByPlacement(placement) {
@@ -133,22 +185,36 @@ export function renderAdSlot(ad, extraClassName = "") {
 
 export function installPageAdvertisements() {
     const overlay = ensurePageAdOverlay();
+    const isDesktop = currentDevice() === "desktop";
+
+    clearLeftVideoSliderTimer();
+
+    if (!isDesktop) {
+        removeLayer(overlay, DESKTOP_VIDEO_SLIDER_PLACEMENT, "right");
+        removeLayer(overlay, DESKTOP_VIDEO_SLIDER_PLACEMENT, "left");
+    }
 
     for (const placement of [
-        "desktop-video-slider",
+        DESKTOP_VIDEO_SLIDER_PLACEMENT,
         "desktop-fullpage-interstitial",
         "mobile-fullpage-interstitial"
     ]) {
         for (const ad of getAdsByPlacement(placement)) {
-            const slot = renderAdSlot(ad, `site-ad-slot site-ad-${placement}`);
-            if (slot) {
-                const layer = document.createElement("div");
-                layer.className = placementLayerClass(placement);
-                layer.dataset.adPlacement = placement;
-                layer.appendChild(slot);
-                overlay.appendChild(layer);
-                debug(ad, "page advertisement inserted", placement);
+            if (placement === DESKTOP_VIDEO_SLIDER_PLACEMENT) {
+                insertPageAdLayer(overlay, ad, placement, "right");
+
+                const delay = getLeftVideoSliderDelay(ad);
+                leftVideoSliderTimer = window.setTimeout(() => {
+                    leftVideoSliderTimer = null;
+                    if (currentDevice() !== "desktop") return;
+                    insertPageAdLayer(overlay, ad, placement, "left");
+                }, delay);
+
+                debug(ad, "left desktop video slider scheduled", delay);
+                continue;
             }
+
+            insertPageAdLayer(overlay, ad, placement);
         }
     }
 }
