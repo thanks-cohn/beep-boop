@@ -698,3 +698,81 @@ body.reader-active .blocks-side-rail {
         max-width: min(82vw, 320px);
     }
 }
+
+/* =========================
+   READER + PAGE AD UPGRADE
+   ========================= */
+
+.reader-ad-inner.reader-ad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    justify-items: center;
+    align-items: center;
+}
+
+.site-ad-desktop-video-slider {
+    position: relative;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    pointer-events: auto;
+}
+
+/* =========================
+   ROTUNDA ARROWS
+   ========================= */
+
+.landing-rotunda {
+    position: relative;
+}
+
+.rotunda-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 20;
+    width: 44px;
+    height: 64px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.22);
+    background: rgba(0,0,0,.46);
+    color: rgba(255,255,255,.95);
+    font-size: 2.4rem;
+    line-height: 1;
+    opacity: 0.55;
+    transition: opacity 160ms ease, transform 160ms ease, background 160ms ease;
+    touch-action: manipulation;
+}
+
+.rotunda-arrow:hover,
+.rotunda-arrow:focus-visible {
+    opacity: 0.9;
+    background: rgba(0,0,0,.68);
+    transform: translateY(-50%) scale(1.04);
+}
+
+.rotunda-arrow-left {
+    left: 8px;
+}
+
+.rotunda-arrow-right {
+    right: 8px;
+}
+
+@media (max-width: 700px) {
+    .reader-ad-inner.reader-ad-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .reader-bottom-bar {
+        text-align: center;
+    }
+
+    .rotunda-arrow {
+        width: 38px;
+        height: 56px;
+        font-size: 2rem;
+    }
+}

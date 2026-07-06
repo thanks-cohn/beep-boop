@@ -79,6 +79,18 @@
     </div>
 
 
+    <script>
+        (function () {
+            const isMobile = window.matchMedia("(max-width: 700px)").matches;
+            const alreadyMobile = window.location.pathname.endsWith("/mobile.html");
+
+            if (!isMobile && alreadyMobile) {
+                const target = "/" + window.location.search + window.location.hash;
+                window.location.replace(target);
+            }
+        })();
+    </script>
+
     <script type="module" src="/src/main.js"></script>
 
 </body>

@@ -9,9 +9,12 @@ async function boot() {
     console.log("AnimePlex");
 
     try {
-        installPageAdvertisements();
         await Page.start();
         Footer.start();
+
+        requestAnimationFrame(() => {
+            installPageAdvertisements();
+        });
     } catch (error) {
         console.error("Page failed to start.", error);
 

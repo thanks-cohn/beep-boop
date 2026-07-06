@@ -113,11 +113,7 @@ function buildReaderNavBar(source, work, chapter, options = {}) {
 }
 
 function buildReaderTopBar(source, work, chapter) {
-    return buildReaderNavBar(source, work, chapter);
-}
-
-function getBetweenReaderPagesAd() {
-    return getAdsByPlacement("between-reader-pages")[0] || null;
+    return buildReaderNavBar(source, work, chapter, { position: "top" });
 }
 
 function shouldInsertReaderAd(ad, pageNumber, totalPages) {
@@ -184,7 +180,7 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
     anchor.id = "chapter-start";
     wrapper.appendChild(anchor);
 
-    const betweenPagesAd = getBetweenReaderPagesAd();
+    const betweenPageAds = getAdsByPlacement("between-reader-pages");
 
     for (let i = 1; i <= manifest.pages; i++) {
         const img = document.createElement("img");
@@ -214,16 +210,19 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
 
         wrapper.appendChild(img);
 
-        if (shouldInsertReaderAd(betweenPagesAd, i, manifest.pages)) {
-            const adSlot = renderAdSlot(betweenPagesAd);
+        for (const ad of betweenPageAds) {
+            if (shouldInsertReaderAd(ad, i, manifest.pages)) {
+                const adSlot = renderAdSlot(ad, "reader-ad-slot-row");
 
-            if (adSlot) {
-                wrapper.appendChild(adSlot);
+                if (adSlot) {
+                    wrapper.appendChild(adSlot);
+                }
             }
         }
     }
 
     const bottomReaderBar = buildReaderNavBar(source, work, chapter, {
+        position: "bottom",
         className: "reader-bottom-bar"
     });
     wrapper.appendChild(bottomReaderBar);
