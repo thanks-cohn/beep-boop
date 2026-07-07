@@ -1,0 +1,65 @@
+<section class="side-meme-cycle" data-cycle-key="top_left_meme" data-storage-key="animeplex-cycle-top_left_meme" aria-label="Top left image cycle">
+  <!-- Placeholder image URLs live in /data/side_column_images_cycle.json and are intended to be replaced later. -->
+  <style>
+    .side-meme-cycle {
+      width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+      border-radius: 10px;
+      background: #000;
+      padding: 10px;
+      margin: 0 0 14px;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 10px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .side-meme-cycle__image {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      max-height: 460px;
+      object-fit: contain;
+      border-radius: 8px;
+      background: #050505;
+    }
+  </style>
+  <img class="side-meme-cycle__image" alt="Cute rotating sidebar image" loading="lazy" decoding="async" hidden>
+  <script>
+    (() => {
+      const root = document.currentScript.closest(".side-meme-cycle");
+      if (!root) return;
+
+      const cycleKey = root.dataset.cycleKey;
+      const storageKey = root.dataset.storageKey;
+      const image = root.querySelector(".side-meme-cycle__image");
+      const pageCache = window.__animeplexSideImageCycle || (window.__animeplexSideImageCycle = {});
+
+      const showImage = (url) => {
+        if (!image || !url) return;
+        image.src = url;
+        image.hidden = false;
+      };
+
+      if (pageCache[cycleKey]) {
+        showImage(pageCache[cycleKey]);
+        return;
+      }
+
+      fetch("/data/side_column_images_cycle.json", { cache: "no-store" })
+        .then((response) => (response.ok ? response.json() : null))
+        .then((cycles) => {
+          const urls = cycles && Array.isArray(cycles[cycleKey]) ? cycles[cycleKey].filter(Boolean) : [];
+          if (!urls.length) return;
+
+          const savedIndex = Number.parseInt(localStorage.getItem(storageKey) || "0", 10);
+          const index = Number.isFinite(savedIndex) && savedIndex >= 0 ? savedIndex % urls.length : 0;
+          const nextIndex = (index + 1) % urls.length;
+
+          localStorage.setItem(storageKey, String(nextIndex));
+          pageCache[cycleKey] = urls[index];
+          showImage(urls[index]);
+        })
+        .catch((error) => console.warn("Side image cycle failed:", cycleKey, error));
+    })();
+  </script>
+</section>
