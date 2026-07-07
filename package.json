@@ -9,6 +9,9 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "vite": "^8.1.0"
+    "node-addon-api": "^8.9.0",
+    "node-gyp": "^13.0.1",
+    "vite": "^8.1.0",
+    "wrangler": "^4.107.0"
   }
 }
