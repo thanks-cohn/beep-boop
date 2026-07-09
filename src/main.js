@@ -1,9 +1,11 @@
 import "./styles/landing.css";
 import { Page } from "./page/page.js";
 import { Footer } from "./components/footer.js";
+import { startGhostText } from "./effects/ghost_text.js";
 
 async function boot() {
     try {
+        startGhostText();
         await Page.start();
         Footer.start();
     } catch (error) {
