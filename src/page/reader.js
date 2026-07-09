@@ -1,7 +1,6 @@
 import { Storage } from "../storage/storage.js";
 import { resolveManifest } from "../storage/manifest_resolver.js";
 import fetchData from "../data/fetch.json";
-import { getAdsByPlacement, renderAdSlot } from "../components/ads.js";
 
 function getWorkRecord(workSlug) {
     return (fetchData.works || []).find(work => work.slug === workSlug);
@@ -116,17 +115,6 @@ function buildReaderTopBar(source, work, chapter) {
     return buildReaderNavBar(source, work, chapter);
 }
 
-function getBetweenReaderPagesAd() {
-    return getAdsByPlacement("between-reader-pages")[0] || null;
-}
-
-function shouldInsertReaderAd(ad, pageNumber, totalPages) {
-    const everyPages = Number(ad?.everyPages || 0);
-
-    return everyPages > 0 &&
-        pageNumber < totalPages &&
-        pageNumber % everyPages === 0;
-}
 
 
 function installReaderChromeAutohide(bar) {
@@ -184,8 +172,6 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
     anchor.id = "chapter-start";
     wrapper.appendChild(anchor);
 
-    const betweenPagesAd = getBetweenReaderPagesAd();
-
     for (let i = 1; i <= manifest.pages; i++) {
         const img = document.createElement("img");
 
@@ -214,13 +200,6 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
 
         wrapper.appendChild(img);
 
-        if (shouldInsertReaderAd(betweenPagesAd, i, manifest.pages)) {
-            const adSlot = renderAdSlot(betweenPagesAd);
-
-            if (adSlot) {
-                wrapper.appendChild(adSlot);
-            }
-        }
     }
 
     const bottomReaderBar = buildReaderNavBar(source, work, chapter, {

@@ -1,5 +1,3 @@
-// src/page/page.js
-
 import { Landing } from "./landing.js";
 import { Reader } from "./reader.js";
 
