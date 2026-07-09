@@ -1,15 +1,9 @@
 import "./styles/landing.css";
-import { Overlay } from "./advertising/overlay.js";
-import { installPageAdvertisements } from "./components/ads.js";
-
 import { Page } from "./page/page.js";
 import { Footer } from "./components/footer.js";
 
 async function boot() {
-    console.log("AnimePlex");
-
     try {
-        installPageAdvertisements();
         await Page.start();
         Footer.start();
     } catch (error) {
@@ -29,5 +23,3 @@ async function boot() {
 }
 
 boot();
-
-Overlay.start();
