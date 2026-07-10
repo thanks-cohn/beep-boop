@@ -1,13 +1,9 @@
 import { Storage } from "../storage/storage.js";
 import { resolveManifest } from "../storage/manifest_resolver.js";
-import fetchData from "../data/fetch.json";
+import { loadWork } from "../storage/work_manifest.js";
 
-function getWorkRecord(workSlug) {
-    return (fetchData.works || []).find(work => work.slug === workSlug);
-}
-
-function getChapterList(workSlug) {
-    const work = getWorkRecord(workSlug);
+async function getChapterList(workSlug) {
+    const work = await loadWork(workSlug);
     return work?.chapters || [];
 }
 
@@ -23,8 +19,7 @@ function chapterLabel(chapter) {
         .replaceAll("/", " / ");
 }
 
-function buildReaderNavBar(source, work, chapter, options = {}) {
-    const chapters = getChapterList(work);
+function buildReaderNavBar(source, work, chapter, chapters, options = {}) {
     const currentIndex = chapters.indexOf(chapter);
 
     const homeBar = document.createElement("div");
@@ -111,8 +106,8 @@ function buildReaderNavBar(source, work, chapter, options = {}) {
     return homeBar;
 }
 
-function buildReaderTopBar(source, work, chapter) {
-    return buildReaderNavBar(source, work, chapter);
+function buildReaderTopBar(source, work, chapter, chapters) {
+    return buildReaderNavBar(source, work, chapter, chapters);
 }
 
 
@@ -160,11 +155,12 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
     });
 
     manifest = resolveManifest(manifest, source, work, chapter);
+    const chapters = await getChapterList(work);
 
     const wrapper = document.createElement("div");
     wrapper.className = "reader-pages";
 
-    const readerBar = buildReaderTopBar(source, work, chapter);
+    const readerBar = buildReaderTopBar(source, work, chapter, chapters);
     wrapper.appendChild(readerBar);
     installReaderChromeAutohide(readerBar);
 
@@ -202,7 +198,7 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
 
     }
 
-    const bottomReaderBar = buildReaderNavBar(source, work, chapter, {
+    const bottomReaderBar = buildReaderNavBar(source, work, chapter, chapters, {
         className: "reader-bottom-bar"
     });
     wrapper.appendChild(bottomReaderBar);

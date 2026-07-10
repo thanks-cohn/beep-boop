@@ -5,8 +5,10 @@ export function resolveManifest(manifest, source, slug, chapter) {
         throw new Error("resolveManifest(): manifest is null.");
     }
 
+    const baseUrl = manifest.base_url || Storage.chapter(source, slug, chapter);
+
     return {
         ...manifest,
-        base_url: Storage.chapter(source, slug, chapter)
+        base_url: baseUrl
     };
 }

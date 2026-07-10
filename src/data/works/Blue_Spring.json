@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "slug": "Blue_Spring",
+  "display": "Blue Spring",
+  "source": "e",
+  "chapters": [
+    "volume_1/chapter_1",
+    "volume_1/chapter_2",
+    "volume_1/chapter_3",
+    "volume_1/chapter_4",
+    "volume_1/chapter_5",
+    "volume_1/chapter_6",
+    "volume_1/chapter_7"
+  ]
+}

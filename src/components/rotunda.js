@@ -1,5 +1,6 @@
 import { Storage } from "../storage/storage.js";
 import { resolveManifest } from "../storage/manifest_resolver.js";
+import { loadWork } from "../storage/work_manifest.js";
 import rotunda from "../data/rotunda.json";
 import storage from "../data/storage.json";
 import "../styles/rotunda.css";
@@ -79,19 +80,20 @@ export class Rotunda {
 
         for (const work of works) {
             try {
-                const chapter = work.chapters?.[0];
+                const resolvedWork = await loadWork(work.slug, rotunda);
+                const chapter = resolvedWork?.chapters?.[0];
 
                 if (!chapter) {
                     console.warn(`Rotunda: skipping "${work.slug}" (no chapters).`);
                     continue;
                 }
 
-                if (!sources[work.source]) {
+                if (!sources[resolvedWork.source]) {
                     console.warn(`Rotunda: skipping "${work.slug}" (unknown source).`);
                     continue;
                 }
 
-                const manifestUrl = Storage.manifest(work.source, work.slug, chapter);
+                const manifestUrl = Storage.manifest(resolvedWork.source, resolvedWork.slug, chapter);
                 const response = await fetch(manifestUrl, { cache: "no-store" });
 
                 if (!response.ok) {
@@ -100,14 +102,14 @@ export class Rotunda {
                 }
 
                 let manifest = await response.json();
-                manifest = resolveManifest(manifest, work.source, work.slug, chapter);
+                manifest = resolveManifest(manifest, resolvedWork.source, resolvedWork.slug, chapter);
 
                 cards.push({
-                    title: work.display,
-                    slug: work.slug,
-                    source: work.source,
+                    title: resolvedWork.display,
+                    slug: resolvedWork.slug,
+                    source: resolvedWork.source,
                     chapter,
-                    image: `${manifest.base_url}/thumb.webp`
+                    image: resolvedWork.thumb || `${manifest.base_url}/thumb.webp`
                 });
             } catch (error) {
                 console.warn(`Rotunda: failed to load "${work.slug}".`, error);
