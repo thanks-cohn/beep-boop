@@ -6,7 +6,9 @@ let searchIndexPromise = null;
 
 function loadSearchIndex() {
     if (!searchIndexPromise) {
-        searchIndexPromise = fetch(SEARCH_INDEX_URL)
+        searchIndexPromise = fetch(SEARCH_INDEX_URL, {
+            cache: "no-store",
+        })
             .then(response => {
                 if (!response.ok) throw new Error(`Search index failed: ${response.status}`);
                 return response.json();

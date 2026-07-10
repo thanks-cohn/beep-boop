@@ -488,3 +488,87 @@ Replace `<slug>` and `<query>` with the work under investigation.
      | [.display, .work, .chapter] | @tsv
    ' dist/data/search.index.json | head -12
    ```
+
+## Implemented Fix
+
+### Files changed
+
+- `src/tools/generate_search.py`
+- `scripts/ingest-work.py`
+- `src/components/search.js`
+- `explain_search.md`
+
+### Generator synchronized output behavior
+
+`src/tools/generate_search.py` now supports an optional `--public-out` argument in addition to the existing `--out` argument. When `--public-out` is provided, the generator builds the search index once in memory and writes that same object to both the normal source index path and the public deployment asset path. This avoids independently generated timestamps or other drift between files.
+
+The generator writes via a reusable `write_index(path, index, minify)` helper. The helper creates parent directories as needed, writes to a temporary file in the destination directory, flushes and fsyncs the file, and atomically replaces the destination so builds and browsers do not observe partial JSON. If `--out` and `--public-out` resolve to the same file, the file is written only once while still reporting both paths.
+
+Existing callers that pass only `--out` remain compatible. The generator does not write into `public/` unless `--public-out` is explicitly provided.
+
+### Ingestion synchronized outputs
+
+`scripts/ingest-work.py` now invokes the search generator with both output paths when search regeneration is requested:
+
+```bash
+python scripts/generate_search.py \
+  --fetch src/data/fetch.json \
+  --storage src/data/storage.json \
+  --out src/data/search.index.json \
+  --public-out public/data/search.index.json \
+  --source e
+```
+
+Both paths are resolved from the repository root. The ingest summary prints both updated search index paths, and both generated search index files are recorded in `all_written` so `--commit-push` stages both the source index and the public deployment index.
+
+### Frontend cache behavior
+
+`src/components/search.js` still keeps the module-level `searchIndexPromise` for the lifetime of a loaded page, but the network request now uses:
+
+```js
+fetch(SEARCH_INDEX_URL, {
+    cache: "no-store",
+})
+```
+
+This keeps the existing in-page behavior while ensuring a fresh page load requests the currently deployed `/data/search.index.json` instead of silently accepting a stale browser HTTP cache response.
+
+### Verification commands
+
+The implementation was verified with:
+
+```bash
+python -m py_compile \
+  scripts/ingest-work.py \
+  scripts/generate_search.py \
+  src/tools/generate_search.py
+```
+
+```bash
+node --check src/components/search.js
+```
+
+```bash
+python scripts/generate_search.py \
+  --fetch src/data/fetch.json \
+  --storage src/data/storage.json \
+  --out /tmp/search.source.test.json \
+  --public-out /tmp/search.public.test.json \
+  --source e
+```
+
+```bash
+sha256sum \
+  /tmp/search.source.test.json \
+  /tmp/search.public.test.json
+```
+
+```bash
+npm run build
+```
+
+The temporary generated source and public test files had identical SHA-256 hashes. The repository JSON data files were not manually edited. Verification generation used `/tmp` outputs rather than regenerating directly into `src/data` or `public/data`.
+
+### Remaining deployment requirement
+
+The code change makes the real ingestion workflow update both `src/data/search.index.json` and `public/data/search.index.json` from the same generator run. A subsequent `npm run build` will then copy `public/data/search.index.json` to `dist/data/search.index.json`. Deployment is still required after committing and building for production users to receive the updated deployed asset, but no deployment was performed as part of this fix.

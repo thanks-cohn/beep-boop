@@ -21,8 +21,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import string
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -95,6 +97,29 @@ def display_from_slug(value: Any) -> str:
 def load_json(path: Path) -> Any:
     with path.open("r", encoding="utf-8") as file:
         return json.load(file)
+
+
+def write_index(path: Path, index: dict[str, Any], minify: bool) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=path.parent, delete=False) as file:
+        temp_path = Path(file.name)
+        try:
+            if minify:
+                json.dump(index, file, ensure_ascii=False, separators=(",", ":"))
+            else:
+                json.dump(index, file, ensure_ascii=False, indent=4)
+            file.write("\n")
+            file.flush()
+            os.fsync(file.fileno())
+        except BaseException:
+            temp_path.unlink(missing_ok=True)
+            raise
+
+    try:
+        temp_path.replace(path)
+    except BaseException:
+        temp_path.unlink(missing_ok=True)
+        raise
 
 
 def find_project_file(filename: str) -> Path | None:
@@ -343,6 +368,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--fetch", type=Path, default=None, help="Path to fetch.json.")
     parser.add_argument("--storage", type=Path, default=None, help="Path to storage.json.")
     parser.add_argument("--out", type=Path, default=None, help="Output path. Defaults beside fetch.json.")
+    parser.add_argument("--public-out", type=Path, default=None, help="Optional public deployment output path to keep synchronized with --out.")
     parser.add_argument("--source", default=DEFAULT_SOURCE, help='Source to index. Default: "e".')
     parser.add_argument("--minify", action="store_true", help="Write compact JSON.")
     return parser.parse_args()
@@ -360,16 +386,14 @@ def main() -> None:
         raise SystemExit("Could not find storage.json. Use --storage path/to/storage.json")
 
     out_path = args.out.expanduser().resolve() if args.out else fetch_path.parent / "search.index.json"
+    public_out_path = args.public_out.expanduser().resolve() if args.public_out else None
 
     index = build_index(load_json(storage_path), load_json(fetch_path), args.source, fetch_path)
 
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    with out_path.open("w", encoding="utf-8") as file:
-        if args.minify:
-            json.dump(index, file, ensure_ascii=False, separators=(",", ":"))
-        else:
-            json.dump(index, file, ensure_ascii=False, indent=4)
-        file.write("\n")
+    write_index(out_path, index, args.minify)
+    wrote_public = public_out_path and public_out_path != out_path
+    if wrote_public:
+        write_index(public_out_path, index, args.minify)
 
     print(f"storage: {storage_path}")
     print(f"fetch:   {fetch_path}")
@@ -378,7 +402,9 @@ def main() -> None:
     print(f"entries: {len(index['entries'])}")
     print(f"tokens:  {len(index['tokens'])}")
     print(f"skipped: {len(index['skipped'])}")
-    print(f"saved:   {out_path}")
+    print(f"saved:        {out_path}")
+    if public_out_path:
+        print(f"public saved: {public_out_path}")
 
 
 if __name__ == "__main__":
