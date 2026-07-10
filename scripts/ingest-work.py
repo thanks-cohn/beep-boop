@@ -805,15 +805,18 @@ def main() -> None:
         print_work_summary(spec, chapters, args)
 
     if args.generate_search and not args.no_search:
+        source_index = data / "search.index.json"
+        public_index = repo_root() / "public" / "data" / "search.index.json"
         run([
             sys.executable,
             str(repo_root() / "scripts" / "generate_search.py"),
             "--fetch", str(data / "fetch.json"),
             "--storage", str(data / "storage.json"),
-            "--out", str(data / "search.index.json"),
+            "--out", str(source_index),
+            "--public-out", str(public_index),
             "--source", args.source,
         ], args.dry_run)
-        all_written.append(data / "search.index.json")
+        all_written.extend([source_index, public_index])
 
     uploaded = False
     if args.upload and not args.no_upload:
@@ -847,6 +850,10 @@ def main() -> None:
     print("\nAnimePlex ingest complete.")
     print(f"Works: {len(specs)}")
     print(f"Uploaded: {'yes' if uploaded else 'skipped'}")
+    if args.generate_search and not args.no_search:
+        print("Search indexes updated:")
+        print(f"- {data / 'search.index.json'}")
+        print(f"- {repo_root() / 'public' / 'data' / 'search.index.json'}")
     for spec, chapters in all_summaries:
         print(f"- {spec.display}: {len(chapters)} chapters, {sum(c.pages for c in chapters)} pages, slug={spec.slug}")
 
