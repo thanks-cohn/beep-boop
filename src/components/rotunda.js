@@ -75,22 +75,43 @@ function installRotundaControls(container, moveBy) {
 }
 
 function uniqueUrls(urls) {
-    return urls.filter(Boolean).filter((url, index, list) => list.indexOf(url) === index);
+    return [...new Set(urls.filter(Boolean))];
 }
+
+function rotundaWorkDefaults(work, sources, defaultSource) {
+    const source = work.source || defaultSource;
+    if (!sources[source]) {
+        warnDev(`Rotunda: skipping "${work.slug}" (unknown source).`);
+        return null;
+    }
+
+    const sourceThumb = `${Storage.work(source, work.slug)}/thumb.webp`;
+    return { source, sourceThumb };
+}
+
+const firstPageThumbnailCache = new Map();
 
 async function firstPageThumbnail(card) {
     const manifestUrl = Storage.manifest(card.source, card.slug, card.chapter);
-    const response = await fetch(manifestUrl, { cache: "no-store" });
+    if (firstPageThumbnailCache.has(manifestUrl)) return firstPageThumbnailCache.get(manifestUrl);
 
-    if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-    }
+    const promise = fetch(manifestUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(json => {
+            const manifest = resolveManifest(json, card.source, card.slug, card.chapter);
+            const padding = manifest.padding ?? 3;
+            const extension = manifest.extension || "webp";
 
-    const manifest = resolveManifest(await response.json(), card.source, card.slug, card.chapter);
-    const padding = manifest.padding ?? 3;
-    const extension = manifest.extension || "webp";
+            return `${manifest.base_url}/${String(1).padStart(padding, "0")}.${extension}`;
+        });
 
-    return `${manifest.base_url}/${String(1).padStart(padding, "0")}.${extension}`;
+    firstPageThumbnailCache.set(manifestUrl, promise);
+    return promise;
 }
 
 function installThumbnailFallback(img, button, card) {
@@ -138,44 +159,49 @@ export class Rotunda {
         const environment = storage.active;
         const sources = storage[environment]?.sources ?? {};
         const works = rotunda.works ?? [];
-        const cards = [];
+        const defaultSource = rotunda.default?.source || "e";
+        const cards = (await Promise.all(works.map(async work => {
+            const defaults = rotundaWorkDefaults(work, sources, defaultSource);
+            if (!defaults) return null;
 
-        for (const work of works) {
             try {
                 const resolvedWork = await loadWork(work.slug, rotunda);
-                const source = resolvedWork?.source || work.source || rotunda.default?.source || "e";
+                const source = resolvedWork?.source || defaults.source;
 
                 if (!sources[source]) {
                     warnDev(`Rotunda: skipping "${work.slug}" (unknown source).`);
-                    continue;
+                    return null;
                 }
 
                 const chapter = resolvedWork?.chapters?.[0];
 
                 if (!chapter) {
                     warnDev(`Rotunda: skipping "${work.slug}" (no chapters).`);
-                    continue;
+                    return null;
                 }
 
-                const sourceThumb = `${Storage.work(source, work.slug)}/thumb.webp`;
+                const sourceThumb = source === defaults.source
+                    ? defaults.sourceThumb
+                    : `${Storage.work(source, work.slug)}/thumb.webp`;
                 const imageCandidates = uniqueUrls([
                     work.thumb,
                     resolvedWork.thumb,
                     sourceThumb
                 ]);
 
-                cards.push({
+                return {
                     title: resolvedWork.display || work.display || work.slug,
                     slug: work.slug,
                     source,
                     chapter,
                     imageCandidates,
                     image: imageCandidates[0] || sourceThumb
-                });
+                };
             } catch (error) {
                 warnDev(`Rotunda: failed to load "${work.slug}".`, error);
+                return null;
             }
-        }
+        }))).filter(Boolean);
 
         if (import.meta.env.DEV) console.log(`Rotunda loaded ${cards.length} works.`);
 
@@ -280,9 +306,10 @@ export class Rotunda {
 
             frame.append(img, overlay);
             button.append(frame, title);
-            track.appendChild(button);
             cardButtons.push(button);
         }
+
+        track.append(...cardButtons);
 
         viewport.addEventListener("pointerdown", event => {
             if (event.pointerType === "mouse") return;

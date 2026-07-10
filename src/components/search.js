@@ -2,6 +2,20 @@ import { normalize } from "../utils/normalize.js";
 
 const SEARCH_INDEX_URL = "/data/search.index.json";
 let hideTimer = null;
+let searchIndexPromise = null;
+
+function loadSearchIndex() {
+    if (!searchIndexPromise) {
+        searchIndexPromise = fetch(SEARCH_INDEX_URL)
+            .then(response => {
+                if (!response.ok) throw new Error(`Search index failed: ${response.status}`);
+                return response.json();
+            })
+            .then(data => data.entries || []);
+    }
+
+    return searchIndexPromise;
+}
 
 function hide(results) {
     results.hidden = true;
@@ -19,23 +33,15 @@ function emitOpen(entry) {
     }));
 }
 
-function renderResults(container, results, input) {
-    container.innerHTML = "";
-    container.hidden = results.length === 0;
-
-    for (const r of results) {
+function renderResults(container, matches) {
+    container.hidden = matches.length === 0;
+    container.replaceChildren(...matches.map((entry, index) => {
         const el = document.createElement("div");
         el.className = "search-result";
-        el.textContent = r.display;
-
-        el.addEventListener("click", () => {
-            hide(container);
-            input.value = "";
-            emitOpen(r);
-        });
-
-        container.appendChild(el);
-    }
+        el.textContent = entry.display;
+        el.dataset.resultIndex = String(index);
+        return el;
+    }));
 }
 
 export class Search {
@@ -54,25 +60,52 @@ export class Search {
         const input = mount.querySelector(".search-input");
         const results = mount.querySelector(".search-results");
 
-        const index = (await fetch(SEARCH_INDEX_URL).then(r => r.json())).entries || [];
+        let activeMatches = [];
+
+        input.addEventListener("focus", () => {
+            loadSearchIndex().catch(error => console.warn("search index failed", error));
+        }, { once: true });
+
+        results.addEventListener("click", event => {
+            if (!(event.target instanceof Element)) return;
+            const result = event.target.closest(".search-result");
+            if (!result) return;
+
+            const entry = activeMatches[Number(result.dataset.resultIndex)];
+            if (!entry) return;
+
+            hide(results);
+            input.value = "";
+            emitOpen(entry);
+        });
 
         // -----------------------------
         // INPUT SEARCH
         // -----------------------------
-        input.addEventListener("input", () => {
-            const q = normalize(input.value);
+        input.addEventListener("input", async () => {
+            const query = input.value;
+            const q = normalize(query);
             const tokens = q.split(" ").filter(Boolean);
 
             if (!tokens.length) {
+                activeMatches = [];
                 hide(results);
                 return;
             }
 
-            const matches = index.filter(e =>
-                tokens.every(t => e.normalized?.includes(t))
-            );
+            const index = await loadSearchIndex();
 
-            renderResults(results, matches.slice(0, 12), input);
+            if (query !== input.value) return;
+
+            activeMatches = [];
+            for (const entry of index) {
+                if (tokens.every(token => entry.normalized?.includes(token))) {
+                    activeMatches.push(entry);
+                    if (activeMatches.length === 12) break;
+                }
+            }
+
+            renderResults(results, activeMatches);
             scheduleHide(results);
         });
 

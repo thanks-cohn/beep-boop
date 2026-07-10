@@ -112,9 +112,15 @@ async function renderBlock(target, rawItem) {
     }
 }
 
+async function buildBlock(rawItem) {
+    const fragment = document.createDocumentFragment();
+    await renderBlock(fragment, rawItem);
+    return fragment;
+}
+
 async function renderBlocks(target, items = []) {
-    target.replaceChildren();
-    for (const item of items) await renderBlock(target, item);
+    const rendered = await Promise.all(items.map(buildBlock));
+    target.replaceChildren(...rendered);
 }
 
 function renderShell(root) {
@@ -133,11 +139,16 @@ export class Blocks {
         if (!root) return;
 
         renderShell(root);
-        await renderBlocks(document.getElementById("blocks-left"), blocksData.left || []);
-        await renderBlocks(document.getElementById("blocks-right"), blocksData.right || []);
+
+        const tasks = [
+            renderBlocks(document.getElementById("blocks-left"), blocksData.left || []),
+            renderBlocks(document.getElementById("blocks-right"), blocksData.right || [])
+        ];
 
         if (!document.body.classList.contains("reader-active")) {
-            await renderBlocks(document.getElementById("blocks-center"), blocksData.center || []);
+            tasks.push(renderBlocks(document.getElementById("blocks-center"), blocksData.center || []));
         }
+
+        await Promise.all(tasks);
     }
 }

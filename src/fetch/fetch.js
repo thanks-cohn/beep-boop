@@ -15,11 +15,7 @@ export class Fetch {
             return this.#cache;
         }
 
-        const response = await fetch(FETCH_FILE, {
-
-            cache: "no-store"
-
-        });
+        const response = await fetch(FETCH_FILE);
 
         if (!response.ok) {
             throw new Error(`Unable to load ${FETCH_FILE}`);
@@ -63,18 +59,14 @@ export class Fetch {
 
         );
 
-        const response = await fetch(url, {
-
-            cache: "no-store"
-
-        });
+        const response = await fetch(url);
 
         if (!response.ok) {
             throw new Error(`Unable to load ${url}`);
         }
 
         let manifest = await response.json();
-        manifest = resolveManifest(manifest, source, slug, chapter);
+        manifest = resolveManifest(manifest, work.source, work.slug, chapterPath);
         return manifest;
 
     }

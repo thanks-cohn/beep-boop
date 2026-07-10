@@ -45,7 +45,7 @@ function normalizePhrases(textBehind) {
 
 async function loadPhrases() {
     try {
-        const response = await fetch(TEXT_BEHIND_URL, { cache: "no-store" });
+        const response = await fetch(TEXT_BEHIND_URL);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return normalizePhrases(await response.json());
     } catch (error) {
