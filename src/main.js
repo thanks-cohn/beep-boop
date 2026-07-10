@@ -5,7 +5,7 @@ import { startGhostText } from "./effects/ghost_text.js";
 
 async function boot() {
     try {
-        startGhostText();
+        startGhostText().catch(error => console.warn("Ghost text failed to start.", error));
         await Page.start();
         Footer.start();
     } catch (error) {

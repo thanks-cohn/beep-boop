@@ -80,9 +80,11 @@ export class Landing {
         </div>
         `;
 
-        await safeStart("search", Search.start);
-        await safeStart("rotunda", Rotunda.start);
-        await safeStart("blocks", Blocks.start);
-        await safeStart("header ticker", startHeaderTicker);
+        await Promise.all([
+            safeStart("search", Search.start),
+            safeStart("rotunda", Rotunda.start),
+            safeStart("blocks", Blocks.start),
+            safeStart("header ticker", startHeaderTicker)
+        ]);
     }
 }
