@@ -1,6 +1,6 @@
 {
     "version": 2,
-    "generated": "2026-07-10T22:47:59.621549+00:00",
+    "generated": "2026-07-12T13:32:14.651790+00:00",
     "environment": "production",
     "source": "e",
     "source_root": "https://cdn.animeplex.lol/works",
@@ -26154,6 +26154,356 @@
                 "1"
             ],
             "compact": "atashigaoshikkoogamansuruthereasoniholdmypeeinchapter1"
+        },
+        {
+            "id": 1312,
+            "type": "work",
+            "source": "e",
+            "display": "1000 Yen Cut no Onee-san ni Suite Morau Hon. III A Lady Giving Me a 1000 yen Haircut 3",
+            "work": "1000_Yen_Cut_no_Onee-san_ni_Suite_Morau_Hon._III_A_Lady_Giving_Me_a_1000_yen_Haircut_3",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=1000_Yen_Cut_no_Onee-san_ni_Suite_Morau_Hon._III_A_Lady_Giving_Me_a_1000_yen_Haircut_3&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/1000_Yen_Cut_no_Onee-san_ni_Suite_Morau_Hon._III_A_Lady_Giving_Me_a_1000_yen_Haircut_3/chapter_1/item.json",
+            "normalized": "1000 yen cut no onee san ni suite morau hon iii a lady giving me a 1000 yen haircut 3",
+            "tokens": [
+                "1000",
+                "yen",
+                "cut",
+                "no",
+                "onee",
+                "san",
+                "ni",
+                "suite",
+                "morau",
+                "hon",
+                "iii",
+                "a",
+                "lady",
+                "giving",
+                "me",
+                "haircut",
+                "3"
+            ],
+            "compact": "1000yencutnooneesannisuitemorauhoniiialadygivingmehaircut3"
+        },
+        {
+            "id": 1313,
+            "type": "chapter",
+            "source": "e",
+            "display": "1000 Yen Cut no Onee-san ni Suite Morau Hon. III A Lady Giving Me a 1000 yen Haircut 3 Chapter 1",
+            "work": "1000_Yen_Cut_no_Onee-san_ni_Suite_Morau_Hon._III_A_Lady_Giving_Me_a_1000_yen_Haircut_3",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=1000_Yen_Cut_no_Onee-san_ni_Suite_Morau_Hon._III_A_Lady_Giving_Me_a_1000_yen_Haircut_3&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/1000_Yen_Cut_no_Onee-san_ni_Suite_Morau_Hon._III_A_Lady_Giving_Me_a_1000_yen_Haircut_3/chapter_1/item.json",
+            "normalized": "1000 yen cut no onee san ni suite morau hon iii a lady giving me a 1000 yen haircut 3 chapter 1",
+            "tokens": [
+                "1000",
+                "yen",
+                "cut",
+                "no",
+                "onee",
+                "san",
+                "ni",
+                "suite",
+                "morau",
+                "hon",
+                "iii",
+                "a",
+                "lady",
+                "giving",
+                "me",
+                "haircut",
+                "3",
+                "chapter",
+                "1"
+            ],
+            "compact": "1000yencutnooneesannisuitemorauhoniiialadygivingmehaircut3chapter1"
+        },
+        {
+            "id": 1314,
+            "type": "work",
+            "source": "e",
+            "display": "Ane no Seiyoku Shori wa Otouto ga Suru Monoda to, Gitei wa Omoi Hajimete Iru. (decensored)",
+            "work": "Ane_no_Seiyoku_Shori_wa_Otouto_ga_Suru_Monoda_to_Gitei_wa_Omoi_Hajimete_Iru._decensored",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=Ane_no_Seiyoku_Shori_wa_Otouto_ga_Suru_Monoda_to_Gitei_wa_Omoi_Hajimete_Iru._decensored&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/Ane_no_Seiyoku_Shori_wa_Otouto_ga_Suru_Monoda_to_Gitei_wa_Omoi_Hajimete_Iru._decensored/chapter_1/item.json",
+            "normalized": "ane no seiyoku shori wa otouto ga suru monoda to gitei wa omoi hajimete iru decensored",
+            "tokens": [
+                "ane",
+                "no",
+                "seiyoku",
+                "shori",
+                "wa",
+                "otouto",
+                "ga",
+                "suru",
+                "monoda",
+                "to",
+                "gitei",
+                "omoi",
+                "hajimete",
+                "iru",
+                "decensored"
+            ],
+            "compact": "anenoseiyokushoriwaotoutogasurumonodatogiteiomoihajimeteirudecensored"
+        },
+        {
+            "id": 1315,
+            "type": "chapter",
+            "source": "e",
+            "display": "Ane no Seiyoku Shori wa Otouto ga Suru Monoda to, Gitei wa Omoi Hajimete Iru. (decensored) Chapter 1",
+            "work": "Ane_no_Seiyoku_Shori_wa_Otouto_ga_Suru_Monoda_to_Gitei_wa_Omoi_Hajimete_Iru._decensored",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=Ane_no_Seiyoku_Shori_wa_Otouto_ga_Suru_Monoda_to_Gitei_wa_Omoi_Hajimete_Iru._decensored&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/Ane_no_Seiyoku_Shori_wa_Otouto_ga_Suru_Monoda_to_Gitei_wa_Omoi_Hajimete_Iru._decensored/chapter_1/item.json",
+            "normalized": "ane no seiyoku shori wa otouto ga suru monoda to gitei wa omoi hajimete iru decensored chapter 1",
+            "tokens": [
+                "ane",
+                "no",
+                "seiyoku",
+                "shori",
+                "wa",
+                "otouto",
+                "ga",
+                "suru",
+                "monoda",
+                "to",
+                "gitei",
+                "omoi",
+                "hajimete",
+                "iru",
+                "decensored",
+                "chapter",
+                "1"
+            ],
+            "compact": "anenoseiyokushoriwaotoutogasurumonodatogiteiomoihajimeteirudecensoredchapter1"
+        },
+        {
+            "id": 1316,
+            "type": "work",
+            "source": "e",
+            "display": "Boshi Jouji 2 ~Daisuki na Musukoni Konyamo Dakareru~",
+            "work": "Boshi_Jouji_2_Daisuki_na_Musukoni_Konyamo_Dakareru",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=Boshi_Jouji_2_Daisuki_na_Musukoni_Konyamo_Dakareru&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/Boshi_Jouji_2_Daisuki_na_Musukoni_Konyamo_Dakareru/chapter_1/item.json",
+            "normalized": "boshi jouji 2 daisuki na musukoni konyamo dakareru",
+            "tokens": [
+                "boshi",
+                "jouji",
+                "2",
+                "daisuki",
+                "na",
+                "musukoni",
+                "konyamo",
+                "dakareru"
+            ],
+            "compact": "boshijouji2daisukinamusukonikonyamodakareru"
+        },
+        {
+            "id": 1317,
+            "type": "chapter",
+            "source": "e",
+            "display": "Boshi Jouji 2 ~Daisuki na Musukoni Konyamo Dakareru~ Chapter 1",
+            "work": "Boshi_Jouji_2_Daisuki_na_Musukoni_Konyamo_Dakareru",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=Boshi_Jouji_2_Daisuki_na_Musukoni_Konyamo_Dakareru&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/Boshi_Jouji_2_Daisuki_na_Musukoni_Konyamo_Dakareru/chapter_1/item.json",
+            "normalized": "boshi jouji 2 daisuki na musukoni konyamo dakareru chapter 1",
+            "tokens": [
+                "boshi",
+                "jouji",
+                "2",
+                "daisuki",
+                "na",
+                "musukoni",
+                "konyamo",
+                "dakareru",
+                "chapter",
+                "1"
+            ],
+            "compact": "boshijouji2daisukinamusukonikonyamodakareruchapter1"
+        },
+        {
+            "id": 1318,
+            "type": "work",
+            "source": "e",
+            "display": "H na Fuushuu ga Aru Inaka no Shinseki ga, Zenin Sukebe Sugiru Hanashi. 2",
+            "work": "H_na_Fuushuu_ga_Aru_Inaka_no_Shinseki_ga_Zenin_Sukebe_Sugiru_Hanashi._2",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=H_na_Fuushuu_ga_Aru_Inaka_no_Shinseki_ga_Zenin_Sukebe_Sugiru_Hanashi._2&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/H_na_Fuushuu_ga_Aru_Inaka_no_Shinseki_ga_Zenin_Sukebe_Sugiru_Hanashi._2/chapter_1/item.json",
+            "normalized": "h na fuushuu ga aru inaka no shinseki ga zenin sukebe sugiru hanashi 2",
+            "tokens": [
+                "h",
+                "na",
+                "fuushuu",
+                "ga",
+                "aru",
+                "inaka",
+                "no",
+                "shinseki",
+                "zenin",
+                "sukebe",
+                "sugiru",
+                "hanashi",
+                "2"
+            ],
+            "compact": "hnafuushuugaaruinakanoshinsekizeninsukebesugiruhanashi2"
+        },
+        {
+            "id": 1319,
+            "type": "chapter",
+            "source": "e",
+            "display": "H na Fuushuu ga Aru Inaka no Shinseki ga, Zenin Sukebe Sugiru Hanashi. 2 Chapter 1",
+            "work": "H_na_Fuushuu_ga_Aru_Inaka_no_Shinseki_ga_Zenin_Sukebe_Sugiru_Hanashi._2",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=H_na_Fuushuu_ga_Aru_Inaka_no_Shinseki_ga_Zenin_Sukebe_Sugiru_Hanashi._2&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/H_na_Fuushuu_ga_Aru_Inaka_no_Shinseki_ga_Zenin_Sukebe_Sugiru_Hanashi._2/chapter_1/item.json",
+            "normalized": "h na fuushuu ga aru inaka no shinseki ga zenin sukebe sugiru hanashi 2 chapter 1",
+            "tokens": [
+                "h",
+                "na",
+                "fuushuu",
+                "ga",
+                "aru",
+                "inaka",
+                "no",
+                "shinseki",
+                "zenin",
+                "sukebe",
+                "sugiru",
+                "hanashi",
+                "2",
+                "chapter",
+                "1"
+            ],
+            "compact": "hnafuushuugaaruinakanoshinsekizeninsukebesugiruhanashi2chapter1"
+        },
+        {
+            "id": 1320,
+            "type": "work",
+            "source": "e",
+            "display": "make a toy",
+            "work": "make_a_toy",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=make_a_toy&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/make_a_toy/chapter_1/item.json",
+            "normalized": "make a toy",
+            "tokens": [
+                "make",
+                "a",
+                "toy"
+            ],
+            "compact": "makeatoy"
+        },
+        {
+            "id": 1321,
+            "type": "chapter",
+            "source": "e",
+            "display": "make a toy Chapter 1",
+            "work": "make_a_toy",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=make_a_toy&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/make_a_toy/chapter_1/item.json",
+            "normalized": "make a toy chapter 1",
+            "tokens": [
+                "make",
+                "a",
+                "toy",
+                "chapter",
+                "1"
+            ],
+            "compact": "makeatoychapter1"
+        },
+        {
+            "id": 1322,
+            "type": "work",
+            "source": "e",
+            "display": "Onee-chan to, Mama to, Ofuro ni Hairo (decensored)",
+            "work": "Onee-chan_to_Mama_to_Ofuro_ni_Hairo_decensored",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=Onee-chan_to_Mama_to_Ofuro_ni_Hairo_decensored&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/Onee-chan_to_Mama_to_Ofuro_ni_Hairo_decensored/chapter_1/item.json",
+            "normalized": "onee chan to mama to ofuro ni hairo decensored",
+            "tokens": [
+                "onee",
+                "chan",
+                "to",
+                "mama",
+                "ofuro",
+                "ni",
+                "hairo",
+                "decensored"
+            ],
+            "compact": "oneechantomamaofuronihairodecensored"
+        },
+        {
+            "id": 1323,
+            "type": "chapter",
+            "source": "e",
+            "display": "Onee-chan to, Mama to, Ofuro ni Hairo (decensored) Chapter 1",
+            "work": "Onee-chan_to_Mama_to_Ofuro_ni_Hairo_decensored",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=Onee-chan_to_Mama_to_Ofuro_ni_Hairo_decensored&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/Onee-chan_to_Mama_to_Ofuro_ni_Hairo_decensored/chapter_1/item.json",
+            "normalized": "onee chan to mama to ofuro ni hairo decensored chapter 1",
+            "tokens": [
+                "onee",
+                "chan",
+                "to",
+                "mama",
+                "ofuro",
+                "ni",
+                "hairo",
+                "decensored",
+                "chapter",
+                "1"
+            ],
+            "compact": "oneechantomamaofuronihairodecensoredchapter1"
+        },
+        {
+            "id": 1324,
+            "type": "work",
+            "source": "e",
+            "display": "Uwasa no Hito The Rumoured Woman",
+            "work": "Uwasa_no_Hito_The_Rumoured_Woman",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=Uwasa_no_Hito_The_Rumoured_Woman&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/Uwasa_no_Hito_The_Rumoured_Woman/chapter_1/item.json",
+            "normalized": "uwasa no hito the rumoured woman",
+            "tokens": [
+                "uwasa",
+                "no",
+                "hito",
+                "the",
+                "rumoured",
+                "woman"
+            ],
+            "compact": "uwasanohitotherumouredwoman"
+        },
+        {
+            "id": 1325,
+            "type": "chapter",
+            "source": "e",
+            "display": "Uwasa no Hito The Rumoured Woman Chapter 1",
+            "work": "Uwasa_no_Hito_The_Rumoured_Woman",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=Uwasa_no_Hito_The_Rumoured_Woman&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/Uwasa_no_Hito_The_Rumoured_Woman/chapter_1/item.json",
+            "normalized": "uwasa no hito the rumoured woman chapter 1",
+            "tokens": [
+                "uwasa",
+                "no",
+                "hito",
+                "the",
+                "rumoured",
+                "woman",
+                "chapter",
+                "1"
+            ],
+            "compact": "uwasanohitotherumouredwomanchapter1"
         }
     ],
     "tokens": {
@@ -27938,7 +28288,14 @@
             1305,
             1307,
             1309,
-            1311
+            1311,
+            1313,
+            1315,
+            1317,
+            1319,
+            1321,
+            1323,
+            1325
         ],
         "chapter": [
             1,
@@ -29173,7 +29530,14 @@
             1305,
             1307,
             1309,
-            1311
+            1311,
+            1313,
+            1315,
+            1317,
+            1319,
+            1321,
+            1323,
+            1325
         ],
         "2": [
             2,
@@ -29222,7 +29586,11 @@
             1281,
             1285,
             1289,
-            1294
+            1294,
+            1316,
+            1317,
+            1318,
+            1319
         ],
         "3": [
             3,
@@ -29271,7 +29639,9 @@
             1282,
             1286,
             1290,
-            1295
+            1295,
+            1312,
+            1313
         ],
         "4": [
             4,
@@ -35096,7 +35466,15 @@
             1300,
             1301,
             1308,
-            1309
+            1309,
+            1312,
+            1313,
+            1314,
+            1315,
+            1318,
+            1319,
+            1324,
+            1325
         ],
         "jikan": [
             1223,
@@ -35273,11 +35651,17 @@
         ],
         "san": [
             1300,
-            1301
+            1301,
+            1312,
+            1313
         ],
         "a": [
             1300,
-            1301
+            1301,
+            1312,
+            1313,
+            1320,
+            1321
         ],
         "wife": [
             1300,
@@ -35379,7 +35763,11 @@
         ],
         "ga": [
             1310,
-            1311
+            1311,
+            1314,
+            1315,
+            1318,
+            1319
         ],
         "oshikko": [
             1310,
@@ -35391,11 +35779,15 @@
         ],
         "suru": [
             1310,
-            1311
+            1311,
+            1314,
+            1315
         ],
         "the": [
             1310,
-            1311
+            1311,
+            1324,
+            1325
         ],
         "reason": [
             1310,
@@ -35420,6 +35812,220 @@
         "in": [
             1310,
             1311
+        ],
+        "1000": [
+            1312,
+            1313
+        ],
+        "yen": [
+            1312,
+            1313
+        ],
+        "cut": [
+            1312,
+            1313
+        ],
+        "onee": [
+            1312,
+            1313,
+            1322,
+            1323
+        ],
+        "ni": [
+            1312,
+            1313,
+            1322,
+            1323
+        ],
+        "suite": [
+            1312,
+            1313
+        ],
+        "morau": [
+            1312,
+            1313
+        ],
+        "hon": [
+            1312,
+            1313
+        ],
+        "iii": [
+            1312,
+            1313
+        ],
+        "lady": [
+            1312,
+            1313
+        ],
+        "giving": [
+            1312,
+            1313
+        ],
+        "me": [
+            1312,
+            1313
+        ],
+        "haircut": [
+            1312,
+            1313
+        ],
+        "ane": [
+            1314,
+            1315
+        ],
+        "seiyoku": [
+            1314,
+            1315
+        ],
+        "shori": [
+            1314,
+            1315
+        ],
+        "wa": [
+            1314,
+            1315
+        ],
+        "otouto": [
+            1314,
+            1315
+        ],
+        "monoda": [
+            1314,
+            1315
+        ],
+        "to": [
+            1314,
+            1315,
+            1322,
+            1323
+        ],
+        "gitei": [
+            1314,
+            1315
+        ],
+        "omoi": [
+            1314,
+            1315
+        ],
+        "hajimete": [
+            1314,
+            1315
+        ],
+        "iru": [
+            1314,
+            1315
+        ],
+        "decensored": [
+            1314,
+            1315,
+            1322,
+            1323
+        ],
+        "boshi": [
+            1316,
+            1317
+        ],
+        "jouji": [
+            1316,
+            1317
+        ],
+        "daisuki": [
+            1316,
+            1317
+        ],
+        "na": [
+            1316,
+            1317,
+            1318,
+            1319
+        ],
+        "musukoni": [
+            1316,
+            1317
+        ],
+        "konyamo": [
+            1316,
+            1317
+        ],
+        "dakareru": [
+            1316,
+            1317
+        ],
+        "h": [
+            1318,
+            1319
+        ],
+        "fuushuu": [
+            1318,
+            1319
+        ],
+        "aru": [
+            1318,
+            1319
+        ],
+        "inaka": [
+            1318,
+            1319
+        ],
+        "shinseki": [
+            1318,
+            1319
+        ],
+        "zenin": [
+            1318,
+            1319
+        ],
+        "sukebe": [
+            1318,
+            1319
+        ],
+        "sugiru": [
+            1318,
+            1319
+        ],
+        "hanashi": [
+            1318,
+            1319
+        ],
+        "make": [
+            1320,
+            1321
+        ],
+        "toy": [
+            1320,
+            1321
+        ],
+        "chan": [
+            1322,
+            1323
+        ],
+        "mama": [
+            1322,
+            1323
+        ],
+        "ofuro": [
+            1322,
+            1323
+        ],
+        "hairo": [
+            1322,
+            1323
+        ],
+        "uwasa": [
+            1324,
+            1325
+        ],
+        "hito": [
+            1324,
+            1325
+        ],
+        "rumoured": [
+            1324,
+            1325
+        ],
+        "woman": [
+            1324,
+            1325
         ]
     },
     "prefixes": {
@@ -35571,7 +36177,15 @@
             1304,
             1305,
             1310,
-            1311
+            1311,
+            1312,
+            1313,
+            1314,
+            1315,
+            1318,
+            1319,
+            1320,
+            1321
         ],
         "at": [
             0,
@@ -36443,7 +37057,13 @@
             1308,
             1309,
             1310,
-            1311
+            1311,
+            1312,
+            1313,
+            1314,
+            1315,
+            1322,
+            1323
         ],
         "on": [
             0,
@@ -36587,7 +37207,11 @@
             138,
             139,
             140,
-            141
+            141,
+            1312,
+            1313,
+            1322,
+            1323
         ],
         "t": [
             0,
@@ -36737,7 +37361,15 @@
             1304,
             1305,
             1310,
-            1311
+            1311,
+            1314,
+            1315,
+            1320,
+            1321,
+            1322,
+            1323,
+            1324,
+            1325
         ],
         "ti": [
             0,
@@ -45521,7 +46153,15 @@
             1305,
             1307,
             1309,
-            1311
+            1311,
+            1312,
+            1313,
+            1315,
+            1317,
+            1319,
+            1321,
+            1323,
+            1325
         ],
         "c": [
             1,
@@ -46757,7 +47397,16 @@
             1305,
             1307,
             1309,
-            1311
+            1311,
+            1312,
+            1313,
+            1315,
+            1317,
+            1319,
+            1321,
+            1322,
+            1323,
+            1325
         ],
         "ch": [
             1,
@@ -47993,7 +48642,15 @@
             1305,
             1307,
             1309,
-            1311
+            1311,
+            1313,
+            1315,
+            1317,
+            1319,
+            1321,
+            1322,
+            1323,
+            1325
         ],
         "cha": [
             1,
@@ -49228,7 +49885,15 @@
             1305,
             1307,
             1309,
-            1311
+            1311,
+            1313,
+            1315,
+            1317,
+            1319,
+            1321,
+            1322,
+            1323,
+            1325
         ],
         "chap": [
             1,
@@ -50463,7 +51128,14 @@
             1305,
             1307,
             1309,
-            1311
+            1311,
+            1313,
+            1315,
+            1317,
+            1319,
+            1321,
+            1323,
+            1325
         ],
         "chapt": [
             1,
@@ -51698,7 +52370,14 @@
             1305,
             1307,
             1309,
-            1311
+            1311,
+            1313,
+            1315,
+            1317,
+            1319,
+            1321,
+            1323,
+            1325
         ],
         "chapte": [
             1,
@@ -52933,7 +53612,14 @@
             1305,
             1307,
             1309,
-            1311
+            1311,
+            1313,
+            1315,
+            1317,
+            1319,
+            1321,
+            1323,
+            1325
         ],
         "chapter": [
             1,
@@ -54168,7 +54854,14 @@
             1305,
             1307,
             1309,
-            1311
+            1311,
+            1313,
+            1315,
+            1317,
+            1319,
+            1321,
+            1323,
+            1325
         ],
         "2": [
             2,
@@ -54530,7 +55223,11 @@
             1281,
             1285,
             1289,
-            1294
+            1294,
+            1316,
+            1317,
+            1318,
+            1319
         ],
         "3": [
             3,
@@ -54862,7 +55559,9 @@
             1282,
             1286,
             1290,
-            1295
+            1295,
+            1312,
+            1313
         ],
         "4": [
             4,
@@ -55852,7 +56551,9 @@
             1260,
             1261,
             1262,
-            1263
+            1263,
+            1312,
+            1313
         ],
         "11": [
             12,
@@ -58157,7 +58858,9 @@
         "100": [
             102,
             242,
-            633
+            633,
+            1312,
+            1313
         ],
         "101": [
             103,
@@ -58751,7 +59454,17 @@
             1308,
             1309,
             1310,
-            1311
+            1311,
+            1312,
+            1313,
+            1314,
+            1315,
+            1318,
+            1319,
+            1322,
+            1323,
+            1324,
+            1325
         ],
         "hu": [
             142,
@@ -65174,7 +65887,9 @@
             1296,
             1297,
             1298,
-            1299
+            1299,
+            1316,
+            1317
         ],
         "bl": [
             533,
@@ -69609,7 +70324,9 @@
             1304,
             1305,
             1306,
-            1307
+            1307,
+            1316,
+            1317
         ],
         "ko": [
             1223,
@@ -69684,7 +70401,9 @@
             1300,
             1301,
             1306,
-            1307
+            1307,
+            1316,
+            1317
         ],
         "kod": [
             1223,
@@ -70043,7 +70762,19 @@
             1300,
             1301,
             1308,
-            1309
+            1309,
+            1312,
+            1313,
+            1314,
+            1315,
+            1316,
+            1317,
+            1318,
+            1319,
+            1322,
+            1323,
+            1324,
+            1325
         ],
         "no": [
             1223,
@@ -70118,7 +70849,15 @@
             1300,
             1301,
             1308,
-            1309
+            1309,
+            1312,
+            1313,
+            1314,
+            1315,
+            1318,
+            1319,
+            1324,
+            1325
         ],
         "j": [
             1223,
@@ -70189,7 +70928,9 @@
             1288,
             1289,
             1290,
-            1291
+            1291,
+            1316,
+            1317
         ],
         "ji": [
             1223,
@@ -70793,7 +71534,13 @@
             1308,
             1309,
             1310,
-            1311
+            1311,
+            1312,
+            1313,
+            1314,
+            1315,
+            1318,
+            1319
         ],
         "sp": [
             1292,
@@ -70885,7 +71632,9 @@
             1300,
             1301,
             1304,
-            1305
+            1305,
+            1318,
+            1319
         ],
         "ara": [
             1300,
@@ -70897,17 +71646,25 @@
         ],
         "sa": [
             1300,
-            1301
+            1301,
+            1312,
+            1313
         ],
         "san": [
             1300,
-            1301
+            1301,
+            1312,
+            1313
         ],
         "w": [
             1300,
             1301,
             1304,
-            1305
+            1305,
+            1314,
+            1315,
+            1324,
+            1325
         ],
         "wi": [
             1300,
@@ -70945,11 +71702,25 @@
             1302,
             1303,
             1310,
-            1311
+            1311,
+            1312,
+            1313,
+            1314,
+            1315,
+            1316,
+            1317,
+            1320,
+            1321,
+            1322,
+            1323
         ],
         "ma": [
             1302,
-            1303
+            1303,
+            1320,
+            1321,
+            1322,
+            1323
         ],
         "mat": [
             1302,
@@ -71019,7 +71790,13 @@
         ],
         "to": [
             1304,
-            1305
+            1305,
+            1314,
+            1315,
+            1320,
+            1321,
+            1322,
+            1323
         ],
         "tok": [
             1304,
@@ -71055,15 +71832,21 @@
         ],
         "z": [
             1304,
-            1305
+            1305,
+            1318,
+            1319
         ],
         "ze": [
             1304,
-            1305
+            1305,
+            1318,
+            1319
         ],
         "zen": [
             1304,
-            1305
+            1305,
+            1318,
+            1319
         ],
         "zenp": [
             1304,
@@ -71099,7 +71882,9 @@
         ],
         "of": [
             1304,
-            1305
+            1305,
+            1322,
+            1323
         ],
         "pe": [
             1304,
@@ -71129,7 +71914,9 @@
         ],
         "y": [
             1304,
-            1305
+            1305,
+            1312,
+            1313
         ],
         "yo": [
             1304,
@@ -71141,7 +71928,9 @@
         ],
         "kon": [
             1306,
-            1307
+            1307,
+            1316,
+            1317
         ],
         "kono": [
             1306,
@@ -71159,7 +71948,13 @@
             1306,
             1307,
             1308,
-            1309
+            1309,
+            1314,
+            1315,
+            1316,
+            1317,
+            1322,
+            1323
         ],
         "do": [
             1306,
@@ -71187,11 +71982,15 @@
         ],
         "ot": [
             1308,
-            1309
+            1309,
+            1314,
+            1315
         ],
         "oto": [
             1308,
-            1309
+            1309,
+            1314,
+            1315
         ],
         "otom": [
             1308,
@@ -71211,7 +72010,9 @@
         ],
         "hi": [
             1308,
-            1309
+            1309,
+            1324,
+            1325
         ],
         "sl": [
             1308,
@@ -71247,7 +72048,9 @@
         ],
         "da": [
             1308,
-            1309
+            1309,
+            1316,
+            1317
         ],
         "day": [
             1308,
@@ -71271,11 +72074,21 @@
         ],
         "g": [
             1310,
-            1311
+            1311,
+            1312,
+            1313,
+            1314,
+            1315,
+            1318,
+            1319
         ],
         "ga": [
             1310,
-            1311
+            1311,
+            1314,
+            1315,
+            1318,
+            1319
         ],
         "os": [
             1310,
@@ -71315,27 +72128,43 @@
         ],
         "su": [
             1310,
-            1311
+            1311,
+            1312,
+            1313,
+            1314,
+            1315,
+            1318,
+            1319
         ],
         "sur": [
             1310,
-            1311
+            1311,
+            1314,
+            1315
         ],
         "suru": [
             1310,
-            1311
+            1311,
+            1314,
+            1315
         ],
         "th": [
             1310,
-            1311
+            1311,
+            1324,
+            1325
         ],
         "the": [
             1310,
-            1311
+            1311,
+            1324,
+            1325
         ],
         "r": [
             1310,
-            1311
+            1311,
+            1324,
+            1325
         ],
         "re": [
             1310,
@@ -71359,11 +72188,19 @@
         ],
         "i": [
             1310,
-            1311
+            1311,
+            1312,
+            1313,
+            1314,
+            1315,
+            1318,
+            1319
         ],
         "ho": [
             1310,
-            1311
+            1311,
+            1312,
+            1313
         ],
         "hol": [
             1310,
@@ -71383,7 +72220,723 @@
         ],
         "in": [
             1310,
-            1311
+            1311,
+            1318,
+            1319
+        ],
+        "1000": [
+            1312,
+            1313
+        ],
+        "ye": [
+            1312,
+            1313
+        ],
+        "yen": [
+            1312,
+            1313
+        ],
+        "cu": [
+            1312,
+            1313
+        ],
+        "cut": [
+            1312,
+            1313
+        ],
+        "one": [
+            1312,
+            1313,
+            1322,
+            1323
+        ],
+        "onee": [
+            1312,
+            1313,
+            1322,
+            1323
+        ],
+        "ni": [
+            1312,
+            1313,
+            1322,
+            1323
+        ],
+        "sui": [
+            1312,
+            1313
+        ],
+        "suit": [
+            1312,
+            1313
+        ],
+        "suite": [
+            1312,
+            1313
+        ],
+        "mo": [
+            1312,
+            1313,
+            1314,
+            1315
+        ],
+        "mor": [
+            1312,
+            1313
+        ],
+        "mora": [
+            1312,
+            1313
+        ],
+        "morau": [
+            1312,
+            1313
+        ],
+        "hon": [
+            1312,
+            1313
+        ],
+        "ii": [
+            1312,
+            1313
+        ],
+        "iii": [
+            1312,
+            1313
+        ],
+        "l": [
+            1312,
+            1313
+        ],
+        "la": [
+            1312,
+            1313
+        ],
+        "lad": [
+            1312,
+            1313
+        ],
+        "lady": [
+            1312,
+            1313
+        ],
+        "gi": [
+            1312,
+            1313,
+            1314,
+            1315
+        ],
+        "giv": [
+            1312,
+            1313
+        ],
+        "givi": [
+            1312,
+            1313
+        ],
+        "givin": [
+            1312,
+            1313
+        ],
+        "giving": [
+            1312,
+            1313
+        ],
+        "me": [
+            1312,
+            1313
+        ],
+        "ha": [
+            1312,
+            1313,
+            1314,
+            1315,
+            1318,
+            1319,
+            1322,
+            1323
+        ],
+        "hai": [
+            1312,
+            1313,
+            1322,
+            1323
+        ],
+        "hair": [
+            1312,
+            1313,
+            1322,
+            1323
+        ],
+        "hairc": [
+            1312,
+            1313
+        ],
+        "haircu": [
+            1312,
+            1313
+        ],
+        "haircut": [
+            1312,
+            1313
+        ],
+        "an": [
+            1314,
+            1315
+        ],
+        "ane": [
+            1314,
+            1315
+        ],
+        "se": [
+            1314,
+            1315
+        ],
+        "sei": [
+            1314,
+            1315
+        ],
+        "seiy": [
+            1314,
+            1315
+        ],
+        "seiyo": [
+            1314,
+            1315
+        ],
+        "seiyok": [
+            1314,
+            1315
+        ],
+        "seiyoku": [
+            1314,
+            1315
+        ],
+        "sh": [
+            1314,
+            1315,
+            1318,
+            1319
+        ],
+        "sho": [
+            1314,
+            1315
+        ],
+        "shor": [
+            1314,
+            1315
+        ],
+        "shori": [
+            1314,
+            1315
+        ],
+        "wa": [
+            1314,
+            1315
+        ],
+        "otou": [
+            1314,
+            1315
+        ],
+        "otout": [
+            1314,
+            1315
+        ],
+        "otouto": [
+            1314,
+            1315
+        ],
+        "mon": [
+            1314,
+            1315
+        ],
+        "mono": [
+            1314,
+            1315
+        ],
+        "monod": [
+            1314,
+            1315
+        ],
+        "monoda": [
+            1314,
+            1315
+        ],
+        "git": [
+            1314,
+            1315
+        ],
+        "gite": [
+            1314,
+            1315
+        ],
+        "gitei": [
+            1314,
+            1315
+        ],
+        "om": [
+            1314,
+            1315
+        ],
+        "omo": [
+            1314,
+            1315
+        ],
+        "omoi": [
+            1314,
+            1315
+        ],
+        "haj": [
+            1314,
+            1315
+        ],
+        "haji": [
+            1314,
+            1315
+        ],
+        "hajim": [
+            1314,
+            1315
+        ],
+        "hajime": [
+            1314,
+            1315
+        ],
+        "hajimet": [
+            1314,
+            1315
+        ],
+        "hajimete": [
+            1314,
+            1315
+        ],
+        "ir": [
+            1314,
+            1315
+        ],
+        "iru": [
+            1314,
+            1315
+        ],
+        "de": [
+            1314,
+            1315,
+            1322,
+            1323
+        ],
+        "dec": [
+            1314,
+            1315,
+            1322,
+            1323
+        ],
+        "dece": [
+            1314,
+            1315,
+            1322,
+            1323
+        ],
+        "decen": [
+            1314,
+            1315,
+            1322,
+            1323
+        ],
+        "decens": [
+            1314,
+            1315,
+            1322,
+            1323
+        ],
+        "decenso": [
+            1314,
+            1315,
+            1322,
+            1323
+        ],
+        "decensor": [
+            1314,
+            1315,
+            1322,
+            1323
+        ],
+        "decensore": [
+            1314,
+            1315,
+            1322,
+            1323
+        ],
+        "decensored": [
+            1314,
+            1315,
+            1322,
+            1323
+        ],
+        "bo": [
+            1316,
+            1317
+        ],
+        "bos": [
+            1316,
+            1317
+        ],
+        "bosh": [
+            1316,
+            1317
+        ],
+        "boshi": [
+            1316,
+            1317
+        ],
+        "jo": [
+            1316,
+            1317
+        ],
+        "jou": [
+            1316,
+            1317
+        ],
+        "jouj": [
+            1316,
+            1317
+        ],
+        "jouji": [
+            1316,
+            1317
+        ],
+        "dai": [
+            1316,
+            1317
+        ],
+        "dais": [
+            1316,
+            1317
+        ],
+        "daisu": [
+            1316,
+            1317
+        ],
+        "daisuk": [
+            1316,
+            1317
+        ],
+        "daisuki": [
+            1316,
+            1317
+        ],
+        "na": [
+            1316,
+            1317,
+            1318,
+            1319
+        ],
+        "mu": [
+            1316,
+            1317
+        ],
+        "mus": [
+            1316,
+            1317
+        ],
+        "musu": [
+            1316,
+            1317
+        ],
+        "musuk": [
+            1316,
+            1317
+        ],
+        "musuko": [
+            1316,
+            1317
+        ],
+        "musukon": [
+            1316,
+            1317
+        ],
+        "musukoni": [
+            1316,
+            1317
+        ],
+        "kony": [
+            1316,
+            1317
+        ],
+        "konya": [
+            1316,
+            1317
+        ],
+        "konyam": [
+            1316,
+            1317
+        ],
+        "konyamo": [
+            1316,
+            1317
+        ],
+        "dak": [
+            1316,
+            1317
+        ],
+        "daka": [
+            1316,
+            1317
+        ],
+        "dakar": [
+            1316,
+            1317
+        ],
+        "dakare": [
+            1316,
+            1317
+        ],
+        "dakarer": [
+            1316,
+            1317
+        ],
+        "dakareru": [
+            1316,
+            1317
+        ],
+        "f": [
+            1318,
+            1319
+        ],
+        "fu": [
+            1318,
+            1319
+        ],
+        "fuu": [
+            1318,
+            1319
+        ],
+        "fuus": [
+            1318,
+            1319
+        ],
+        "fuush": [
+            1318,
+            1319
+        ],
+        "fuushu": [
+            1318,
+            1319
+        ],
+        "fuushuu": [
+            1318,
+            1319
+        ],
+        "aru": [
+            1318,
+            1319
+        ],
+        "ina": [
+            1318,
+            1319
+        ],
+        "inak": [
+            1318,
+            1319
+        ],
+        "inaka": [
+            1318,
+            1319
+        ],
+        "shi": [
+            1318,
+            1319
+        ],
+        "shin": [
+            1318,
+            1319
+        ],
+        "shins": [
+            1318,
+            1319
+        ],
+        "shinse": [
+            1318,
+            1319
+        ],
+        "shinsek": [
+            1318,
+            1319
+        ],
+        "shinseki": [
+            1318,
+            1319
+        ],
+        "zeni": [
+            1318,
+            1319
+        ],
+        "zenin": [
+            1318,
+            1319
+        ],
+        "suk": [
+            1318,
+            1319
+        ],
+        "suke": [
+            1318,
+            1319
+        ],
+        "sukeb": [
+            1318,
+            1319
+        ],
+        "sukebe": [
+            1318,
+            1319
+        ],
+        "sug": [
+            1318,
+            1319
+        ],
+        "sugi": [
+            1318,
+            1319
+        ],
+        "sugir": [
+            1318,
+            1319
+        ],
+        "sugiru": [
+            1318,
+            1319
+        ],
+        "han": [
+            1318,
+            1319
+        ],
+        "hana": [
+            1318,
+            1319
+        ],
+        "hanas": [
+            1318,
+            1319
+        ],
+        "hanash": [
+            1318,
+            1319
+        ],
+        "hanashi": [
+            1318,
+            1319
+        ],
+        "mak": [
+            1320,
+            1321
+        ],
+        "make": [
+            1320,
+            1321
+        ],
+        "toy": [
+            1320,
+            1321
+        ],
+        "chan": [
+            1322,
+            1323
+        ],
+        "mam": [
+            1322,
+            1323
+        ],
+        "mama": [
+            1322,
+            1323
+        ],
+        "ofu": [
+            1322,
+            1323
+        ],
+        "ofur": [
+            1322,
+            1323
+        ],
+        "ofuro": [
+            1322,
+            1323
+        ],
+        "hairo": [
+            1322,
+            1323
+        ],
+        "u": [
+            1324,
+            1325
+        ],
+        "uw": [
+            1324,
+            1325
+        ],
+        "uwa": [
+            1324,
+            1325
+        ],
+        "uwas": [
+            1324,
+            1325
+        ],
+        "uwasa": [
+            1324,
+            1325
+        ],
+        "hit": [
+            1324,
+            1325
+        ],
+        "hito": [
+            1324,
+            1325
+        ],
+        "ru": [
+            1324,
+            1325
+        ],
+        "rum": [
+            1324,
+            1325
+        ],
+        "rumo": [
+            1324,
+            1325
+        ],
+        "rumou": [
+            1324,
+            1325
+        ],
+        "rumour": [
+            1324,
+            1325
+        ],
+        "rumoure": [
+            1324,
+            1325
+        ],
+        "rumoured": [
+            1324,
+            1325
+        ],
+        "wo": [
+            1324,
+            1325
+        ],
+        "wom": [
+            1324,
+            1325
+        ],
+        "woma": [
+            1324,
+            1325
+        ],
+        "woman": [
+            1324,
+            1325
         ]
     },
     "compact": {
@@ -75322,6 +76875,48 @@
         ],
         "atashigaoshikkoogamansuruthereasoniholdmypeeinchapter1": [
             1311
+        ],
+        "1000yencutnooneesannisuitemorauhoniiialadygivingmehaircut3": [
+            1312
+        ],
+        "1000yencutnooneesannisuitemorauhoniiialadygivingmehaircut3chapter1": [
+            1313
+        ],
+        "anenoseiyokushoriwaotoutogasurumonodatogiteiomoihajimeteirudecensored": [
+            1314
+        ],
+        "anenoseiyokushoriwaotoutogasurumonodatogiteiomoihajimeteirudecensoredchapter1": [
+            1315
+        ],
+        "boshijouji2daisukinamusukonikonyamodakareru": [
+            1316
+        ],
+        "boshijouji2daisukinamusukonikonyamodakareruchapter1": [
+            1317
+        ],
+        "hnafuushuugaaruinakanoshinsekizeninsukebesugiruhanashi2": [
+            1318
+        ],
+        "hnafuushuugaaruinakanoshinsekizeninsukebesugiruhanashi2chapter1": [
+            1319
+        ],
+        "makeatoy": [
+            1320
+        ],
+        "makeatoychapter1": [
+            1321
+        ],
+        "oneechantomamaofuronihairodecensored": [
+            1322
+        ],
+        "oneechantomamaofuronihairodecensoredchapter1": [
+            1323
+        ],
+        "uwasanohitotherumouredwoman": [
+            1324
+        ],
+        "uwasanohitotherumouredwomanchapter1": [
+            1325
         ]
     },
     "skipped": []
