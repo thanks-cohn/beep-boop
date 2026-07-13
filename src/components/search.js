@@ -68,17 +68,40 @@ export class Search {
             loadSearchIndex().catch(error => console.warn("search index failed", error));
         }, { once: true });
 
-        results.addEventListener("click", event => {
-            if (!(event.target instanceof Element)) return;
-            const result = event.target.closest(".search-result");
-            if (!result) return;
-
+        function openResult(result) {
             const entry = activeMatches[Number(result.dataset.resultIndex)];
             if (!entry) return;
 
+            clearTimeout(hideTimer);
             hide(results);
             input.value = "";
             emitOpen(entry);
+        }
+
+        // Pointerdown fires before another layer or focus change can swallow the click.
+        results.addEventListener("pointerdown", event => {
+            if (!(event.target instanceof Element)) return;
+
+            const result = event.target.closest(".search-result");
+            if (!result) return;
+
+            event.preventDefault();
+            event.stopPropagation();
+            openResult(result);
+        });
+
+        // Preserve keyboard-generated and synthetic clicks.
+        results.addEventListener("click", event => {
+            if (!(event.target instanceof Element)) return;
+
+            const result = event.target.closest(".search-result");
+            if (!result || event.detail !== 0) return;
+
+            openResult(result);
+        });
+
+        results.addEventListener("pointerenter", () => {
+            clearTimeout(hideTimer);
         });
 
         // -----------------------------
@@ -108,7 +131,7 @@ export class Search {
             }
 
             renderResults(results, activeMatches);
-            scheduleHide(results);
+            clearTimeout(hideTimer);
         });
 
         input.addEventListener("keydown", (event) => {
