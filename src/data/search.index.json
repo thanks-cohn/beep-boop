@@ -1,6 +1,6 @@
 {
     "version": 2,
-    "generated": "2026-07-14T01:29:30.255894+00:00",
+    "generated": "2026-07-14T04:35:29.792927+00:00",
     "environment": "production",
     "source": "e",
     "source_root": "https://cdn.animeplex.lol/works",
@@ -24447,6 +24447,118 @@
                 "7"
             ],
             "compact": "bluespringvolume1chapter7"
+        },
+        {
+            "id": 1231,
+            "type": "work",
+            "source": "e",
+            "display": "Chu Berozu (decensored)",
+            "work": "Chu_Berozu_decensored",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=Chu_Berozu_decensored&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/Chu_Berozu_decensored/chapter_1/item.json",
+            "normalized": "chu berozu decensored",
+            "tokens": [
+                "chu",
+                "berozu",
+                "decensored"
+            ],
+            "compact": "chuberozudecensored"
+        },
+        {
+            "id": 1232,
+            "type": "chapter",
+            "source": "e",
+            "display": "Chu Berozu (decensored) Chapter 1",
+            "work": "Chu_Berozu_decensored",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=Chu_Berozu_decensored&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/Chu_Berozu_decensored/chapter_1/item.json",
+            "normalized": "chu berozu decensored chapter 1",
+            "tokens": [
+                "chu",
+                "berozu",
+                "decensored",
+                "chapter",
+                "1"
+            ],
+            "compact": "chuberozudecensoredchapter1"
+        },
+        {
+            "id": 1233,
+            "type": "work",
+            "source": "e",
+            "display": "Kanako to Ojisan [Spanish] =EES= &",
+            "work": "Kanako_to_Ojisan_Spanish_EES",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=Kanako_to_Ojisan_Spanish_EES&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/Kanako_to_Ojisan_Spanish_EES/chapter_1/item.json",
+            "normalized": "kanako to ojisan spanish ees",
+            "tokens": [
+                "kanako",
+                "to",
+                "ojisan",
+                "spanish",
+                "ees"
+            ],
+            "compact": "kanakotoojisanspanishees"
+        },
+        {
+            "id": 1234,
+            "type": "chapter",
+            "source": "e",
+            "display": "Kanako to Ojisan [Spanish] =EES= & Chapter 1",
+            "work": "Kanako_to_Ojisan_Spanish_EES",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=Kanako_to_Ojisan_Spanish_EES&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/Kanako_to_Ojisan_Spanish_EES/chapter_1/item.json",
+            "normalized": "kanako to ojisan spanish ees chapter 1",
+            "tokens": [
+                "kanako",
+                "to",
+                "ojisan",
+                "spanish",
+                "ees",
+                "chapter",
+                "1"
+            ],
+            "compact": "kanakotoojisanspanisheeschapter1"
+        },
+        {
+            "id": 1235,
+            "type": "work",
+            "source": "e",
+            "display": "YELLOW★POP",
+            "work": "YELLOW_POP",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=YELLOW_POP&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/YELLOW_POP/chapter_1/item.json",
+            "normalized": "yellow★pop",
+            "tokens": [
+                "yellow★pop",
+                "yellow",
+                "pop"
+            ],
+            "compact": "yellow★popyellowpop"
+        },
+        {
+            "id": 1236,
+            "type": "chapter",
+            "source": "e",
+            "display": "YELLOW★POP Chapter 1",
+            "work": "YELLOW_POP",
+            "chapter": "chapter_1",
+            "reader_url": "/reader?source=e&work=YELLOW_POP&chapter=chapter_1",
+            "manifest_url": "https://cdn.animeplex.lol/works/YELLOW_POP/chapter_1/item.json",
+            "normalized": "yellow★pop chapter 1",
+            "tokens": [
+                "yellow★pop",
+                "yellow",
+                "pop",
+                "chapter",
+                "1"
+            ],
+            "compact": "yellow★popyellowpopchapter1"
         }
     ],
     "tokens": {
@@ -26137,7 +26249,10 @@
             1227,
             1228,
             1229,
-            1230
+            1230,
+            1232,
+            1234,
+            1236
         ],
         "chapter": [
             1,
@@ -27366,7 +27481,10 @@
             1227,
             1228,
             1229,
-            1230
+            1230,
+            1232,
+            1234,
+            1236
         ],
         "2": [
             2,
@@ -33052,6 +33170,50 @@
             1228,
             1229,
             1230
+        ],
+        "chu": [
+            1231,
+            1232
+        ],
+        "berozu": [
+            1231,
+            1232
+        ],
+        "decensored": [
+            1231,
+            1232
+        ],
+        "kanako": [
+            1233,
+            1234
+        ],
+        "to": [
+            1233,
+            1234
+        ],
+        "ojisan": [
+            1233,
+            1234
+        ],
+        "spanish": [
+            1233,
+            1234
+        ],
+        "ees": [
+            1233,
+            1234
+        ],
+        "yellow★pop": [
+            1235,
+            1236
+        ],
+        "yellow": [
+            1235,
+            1236
+        ],
+        "pop": [
+            1235,
+            1236
         ]
     },
     "prefixes": {
@@ -34061,7 +34223,9 @@
             138,
             139,
             140,
-            141
+            141,
+            1233,
+            1234
         ],
         "on": [
             0,
@@ -34349,7 +34513,9 @@
             138,
             139,
             140,
-            141
+            141,
+            1233,
+            1234
         ],
         "ti": [
             0,
@@ -42675,7 +42841,10 @@
             1227,
             1228,
             1229,
-            1230
+            1230,
+            1232,
+            1234,
+            1236
         ],
         "c": [
             1,
@@ -43904,7 +44073,11 @@
             1227,
             1228,
             1229,
-            1230
+            1230,
+            1231,
+            1232,
+            1234,
+            1236
         ],
         "ch": [
             1,
@@ -45133,7 +45306,11 @@
             1227,
             1228,
             1229,
-            1230
+            1230,
+            1231,
+            1232,
+            1234,
+            1236
         ],
         "cha": [
             1,
@@ -46362,7 +46539,10 @@
             1227,
             1228,
             1229,
-            1230
+            1230,
+            1232,
+            1234,
+            1236
         ],
         "chap": [
             1,
@@ -47591,7 +47771,10 @@
             1227,
             1228,
             1229,
-            1230
+            1230,
+            1232,
+            1234,
+            1236
         ],
         "chapt": [
             1,
@@ -48820,7 +49003,10 @@
             1227,
             1228,
             1229,
-            1230
+            1230,
+            1232,
+            1234,
+            1236
         ],
         "chapte": [
             1,
@@ -50049,7 +50235,10 @@
             1227,
             1228,
             1229,
-            1230
+            1230,
+            1232,
+            1234,
+            1236
         ],
         "chapter": [
             1,
@@ -51278,7 +51467,10 @@
             1227,
             1228,
             1229,
-            1230
+            1230,
+            1232,
+            1234,
+            1236
         ],
         "2": [
             2,
@@ -62166,7 +62358,9 @@
             1227,
             1228,
             1229,
-            1230
+            1230,
+            1231,
+            1232
         ],
         "bl": [
             533,
@@ -66552,7 +66746,9 @@
             1227,
             1228,
             1229,
-            1230
+            1230,
+            1233,
+            1234
         ],
         "sp": [
             1223,
@@ -66562,7 +66758,9 @@
             1227,
             1228,
             1229,
-            1230
+            1230,
+            1233,
+            1234
         ],
         "spr": [
             1223,
@@ -66603,6 +66801,202 @@
             1228,
             1229,
             1230
+        ],
+        "chu": [
+            1231,
+            1232
+        ],
+        "be": [
+            1231,
+            1232
+        ],
+        "ber": [
+            1231,
+            1232
+        ],
+        "bero": [
+            1231,
+            1232
+        ],
+        "beroz": [
+            1231,
+            1232
+        ],
+        "berozu": [
+            1231,
+            1232
+        ],
+        "d": [
+            1231,
+            1232
+        ],
+        "de": [
+            1231,
+            1232
+        ],
+        "dec": [
+            1231,
+            1232
+        ],
+        "dece": [
+            1231,
+            1232
+        ],
+        "decen": [
+            1231,
+            1232
+        ],
+        "decens": [
+            1231,
+            1232
+        ],
+        "decenso": [
+            1231,
+            1232
+        ],
+        "decensor": [
+            1231,
+            1232
+        ],
+        "decensore": [
+            1231,
+            1232
+        ],
+        "decensored": [
+            1231,
+            1232
+        ],
+        "k": [
+            1233,
+            1234
+        ],
+        "ka": [
+            1233,
+            1234
+        ],
+        "kan": [
+            1233,
+            1234
+        ],
+        "kana": [
+            1233,
+            1234
+        ],
+        "kanak": [
+            1233,
+            1234
+        ],
+        "kanako": [
+            1233,
+            1234
+        ],
+        "to": [
+            1233,
+            1234
+        ],
+        "oj": [
+            1233,
+            1234
+        ],
+        "oji": [
+            1233,
+            1234
+        ],
+        "ojis": [
+            1233,
+            1234
+        ],
+        "ojisa": [
+            1233,
+            1234
+        ],
+        "ojisan": [
+            1233,
+            1234
+        ],
+        "spa": [
+            1233,
+            1234
+        ],
+        "span": [
+            1233,
+            1234
+        ],
+        "spani": [
+            1233,
+            1234
+        ],
+        "spanis": [
+            1233,
+            1234
+        ],
+        "spanish": [
+            1233,
+            1234
+        ],
+        "e": [
+            1233,
+            1234
+        ],
+        "ee": [
+            1233,
+            1234
+        ],
+        "ees": [
+            1233,
+            1234
+        ],
+        "y": [
+            1235,
+            1236
+        ],
+        "ye": [
+            1235,
+            1236
+        ],
+        "yel": [
+            1235,
+            1236
+        ],
+        "yell": [
+            1235,
+            1236
+        ],
+        "yello": [
+            1235,
+            1236
+        ],
+        "yellow": [
+            1235,
+            1236
+        ],
+        "yellow★": [
+            1235,
+            1236
+        ],
+        "yellow★p": [
+            1235,
+            1236
+        ],
+        "yellow★po": [
+            1235,
+            1236
+        ],
+        "yellow★pop": [
+            1235,
+            1236
+        ],
+        "p": [
+            1235,
+            1236
+        ],
+        "po": [
+            1235,
+            1236
+        ],
+        "pop": [
+            1235,
+            1236
         ]
     },
     "compact": {
@@ -70298,6 +70692,24 @@
         ],
         "bluespringvolume1chapter7": [
             1230
+        ],
+        "chuberozudecensored": [
+            1231
+        ],
+        "chuberozudecensoredchapter1": [
+            1232
+        ],
+        "kanakotoojisanspanishees": [
+            1233
+        ],
+        "kanakotoojisanspanisheeschapter1": [
+            1234
+        ],
+        "yellow★popyellowpop": [
+            1235
+        ],
+        "yellow★popyellowpopchapter1": [
+            1236
         ]
     },
     "skipped": []

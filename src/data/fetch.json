@@ -29,6 +29,27 @@
       "source": "e",
       "manifest": "works/Blue_Spring.json",
       "thumb": "https://cdn.animeplex.lol/works/Blue_Spring/thumb.webp"
+    },
+    {
+      "slug": "Chu_Berozu_decensored",
+      "display": "Chu Berozu (decensored)",
+      "source": "e",
+      "manifest": "works/Chu_Berozu_decensored.json",
+      "thumb": "https://cdn.animeplex.lol/works/Chu_Berozu_decensored/chapter_1/thumb.webp"
+    },
+    {
+      "slug": "Kanako_to_Ojisan_Spanish_EES",
+      "display": "Kanako to Ojisan [Spanish] =EES= &",
+      "source": "e",
+      "manifest": "works/Kanako_to_Ojisan_Spanish_EES.json",
+      "thumb": "https://cdn.animeplex.lol/works/Kanako_to_Ojisan_Spanish_EES/chapter_1/thumb.webp"
+    },
+    {
+      "slug": "YELLOW_POP",
+      "display": "YELLOW★POP",
+      "source": "e",
+      "manifest": "works/YELLOW_POP.json",
+      "thumb": "https://cdn.animeplex.lol/works/YELLOW_POP/chapter_1/thumb.webp"
     }
   ]
 }
