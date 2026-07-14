@@ -1,4 +1,4 @@
-name: Deadman Switch
+name: Deadman Switch 2
 
 on:
   workflow_dispatch:
