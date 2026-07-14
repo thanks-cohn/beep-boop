@@ -1,6 +1,7 @@
 import { Storage } from "../storage/storage.js";
 import { resolveManifest } from "../storage/manifest_resolver.js";
 import { loadWork } from "../storage/work_manifest.js";
+import { Blocks } from "../components/blocks.js";
 
 async function getChapterList(workSlug) {
     const work = await loadWork(workSlug);
@@ -139,6 +140,51 @@ function installReaderChromeAutohide(bar) {
     showThenHide();
 }
 
+function ensureReaderBlockLayout(container) {
+    let layout = container.querySelector(":scope > .reader-block-layout");
+    if (!layout) {
+        container.replaceChildren();
+        layout = document.createElement("div");
+        layout.className = "reader-block-layout";
+
+        const leftAside = document.createElement("aside");
+        leftAside.className = "reader-block-side reader-block-side-left";
+        const leftBlocks = document.createElement("div");
+        leftBlocks.className = "reader-blocks-left blocks-column";
+        leftAside.appendChild(leftBlocks);
+
+        const content = document.createElement("main");
+        content.className = "reader-content-area";
+
+        const rightAside = document.createElement("aside");
+        rightAside.className = "reader-block-side reader-block-side-right";
+        const rightBlocks = document.createElement("div");
+        rightBlocks.className = "reader-blocks-right blocks-column";
+        rightAside.appendChild(rightBlocks);
+
+        layout.appendChild(leftAside);
+        layout.appendChild(content);
+        layout.appendChild(rightAside);
+        container.appendChild(layout);
+    }
+
+    return {
+        layout,
+        content: layout.querySelector(".reader-content-area"),
+        left: layout.querySelector(".reader-blocks-left"),
+        right: layout.querySelector(".reader-blocks-right")
+    };
+}
+
+async function startReaderBlocks(layoutParts) {
+    await Blocks.start({
+        page: "reader",
+        left: layoutParts.left,
+        center: null,
+        right: layoutParts.right
+    });
+}
+
 async function renderManifestInto(root, manifestUrl, source, work, chapter) {
     if (!root || !manifestUrl) {
         console.warn("Reader: missing root or manifestUrl.");
@@ -203,7 +249,9 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
     });
     wrapper.appendChild(bottomReaderBar);
 
-    root.replaceChildren(wrapper);
+    const layoutParts = ensureReaderBlockLayout(root);
+    layoutParts.content.replaceChildren(wrapper);
+    startReaderBlocks(layoutParts).catch(error => console.warn("Reader blocks failed", error));
 
     setTimeout(() => {
         anchor.scrollIntoView({
@@ -229,6 +277,7 @@ export class Reader {
         } catch (err) {
             console.error("Reader failed:", err);
 
+            container.replaceChildren();
             container.innerHTML = `
                 <div class="reader-error">
                     <h2>Failed to load chapter</h2>

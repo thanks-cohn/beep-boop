@@ -2,6 +2,7 @@ import blocksData from "../data/blocks.json";
 
 const IMAGE_PATTERN = /\.(avif|bmp|gif|jpe?g|png|svg|webp)(\?.*)?$/i;
 const HTML_PATTERN = /\.html?(\?.*)?$/i;
+const PLACEMENTS = ["left", "center", "right"];
 
 async function loadText(path) {
     const response = await fetch(path);
@@ -19,9 +20,22 @@ function normalizeBlock(item) {
     return { text: value };
 }
 
-function block(className) {
+function isEnabled(item, page) {
+    const block = normalizeBlock(item);
+    if (!block) return false;
+    if (block.enabled === false || block.active === false || block.disabled === true) return false;
+    const excluded = block.excludePages || block.exclude_pages || block.exclude || block.hiddenOn || block.hidden_on;
+    if (Array.isArray(excluded) && excluded.includes(page)) return false;
+    const pages = block.pages || block.includePages || block.include_pages || block.onlyPages || block.only_pages;
+    if (Array.isArray(pages) && pages.length && !pages.includes(page)) return false;
+    if (page === "reader" && (block.reader === false || block.readerEnabled === false || block.reader_enabled === false)) return false;
+    return true;
+}
+
+function block(className, item = {}) {
     const element = document.createElement("section");
-    element.className = ["site-block", className].filter(Boolean).join(" ");
+    element.className = ["site-block", className, item.className || item.class || ""].filter(Boolean).join(" ");
+    if (item.sticky) element.classList.add("site-block-sticky");
     return element;
 }
 
@@ -42,13 +56,15 @@ function appendHtml(target, html) {
 }
 
 function imageBlock(item) {
-    const element = block("image-block");
+    const element = block("image-block", item);
     const image = document.createElement("img");
     image.className = "block-image";
     image.src = item.image || item.src || item.url;
     image.alt = item.alt || item.title || "";
     image.loading = item.loading || "lazy";
     image.decoding = "async";
+    if (item.width) image.width = item.width;
+    if (item.height) image.height = item.height;
 
     if (item.href || item.link) {
         const link = document.createElement("a");
@@ -65,7 +81,7 @@ function imageBlock(item) {
 }
 
 function textBlock(item) {
-    const element = block("text-block");
+    const element = block("text-block", item);
     if (item.title) {
         const title = document.createElement("h3");
         title.textContent = item.title;
@@ -92,16 +108,18 @@ async function renderBlock(target, rawItem) {
         } else if (item.image || item.src || IMAGE_PATTERN.test(item.url || "")) {
             target.appendChild(imageBlock(item));
         } else if (item.embed || item.code) {
-            const element = block("embed-block");
+            const element = block("embed-block", item);
             appendHtml(element, item.embed || item.code);
             target.appendChild(element);
         } else if (item.iframe || item.page) {
-            const element = block("iframe-block");
+            const element = block("iframe-block", item);
             const iframe = document.createElement("iframe");
             iframe.className = "block-iframe";
             iframe.src = item.iframe || item.page;
             iframe.title = item.title || "Embedded content";
             iframe.loading = "lazy";
+            if (item.width) iframe.width = item.width;
+            if (item.height) iframe.height = item.height;
             element.appendChild(iframe);
             target.appendChild(element);
         } else if (item.title || item.body || item.text || item.content) {
@@ -118,12 +136,14 @@ async function buildBlock(rawItem) {
     return fragment;
 }
 
-async function renderBlocks(target, items = []) {
-    const rendered = await Promise.all(items.map(buildBlock));
+async function renderBlocks(target, items = [], page = "landing") {
+    if (!target) return;
+    const filtered = items.filter(item => isEnabled(item, page));
+    const rendered = await Promise.all(filtered.map(buildBlock));
     target.replaceChildren(...rendered);
 }
 
-function renderShell(root) {
+export function createLandingBlockShell(root) {
     root.innerHTML = `
         <div id="blocks-shell" class="blocks-shell">
             <aside class="blocks-side"><div id="blocks-left" class="blocks-column"></div></aside>
@@ -133,22 +153,49 @@ function renderShell(root) {
     `;
 }
 
+function optionContainer(options, name, fallbackSelector) {
+    if (Object.prototype.hasOwnProperty.call(options, name)) {
+        const value = options[name];
+        if (value === null) return null;
+        if (typeof value === "string") return document.querySelector(value);
+        return value;
+    }
+    if (!fallbackSelector) return null;
+    return document.querySelector(fallbackSelector);
+}
+
+function itemsForPlacement(config, placement) {
+    const raw = config?.[placement];
+    if (!Array.isArray(raw)) return [];
+    return raw.slice().sort((a, b) => (normalizeBlock(a)?.order ?? 0) - (normalizeBlock(b)?.order ?? 0));
+}
+
+export async function renderBlocksIntoContainers(options = {}) {
+    const page = options.page || "landing";
+    const config = options.blocksData || blocksData || {};
+    const containers = {
+        left: optionContainer(options, "left", "#blocks-left"),
+        center: optionContainer(options, "center", "#blocks-center"),
+        right: optionContainer(options, "right", "#blocks-right")
+    };
+
+    await Promise.all(PLACEMENTS.map(placement => renderBlocks(
+        containers[placement],
+        itemsForPlacement(config, placement),
+        page
+    )));
+}
+
 export class Blocks {
-    static async start() {
-        const root = document.getElementById("blocks-root");
-        if (!root) return;
-
-        renderShell(root);
-
-        const tasks = [
-            renderBlocks(document.getElementById("blocks-left"), blocksData.left || []),
-            renderBlocks(document.getElementById("blocks-right"), blocksData.right || [])
-        ];
-
-        if (!document.body.classList.contains("reader-active")) {
-            tasks.push(renderBlocks(document.getElementById("blocks-center"), blocksData.center || []));
+    static async start(options = {}) {
+        if (Object.keys(options).length === 0) {
+            const root = document.getElementById("blocks-root");
+            if (!root) return;
+            createLandingBlockShell(root);
+            await renderBlocksIntoContainers({ page: "landing" });
+            return;
         }
 
-        await Promise.all(tasks);
+        await renderBlocksIntoContainers(options);
     }
 }
