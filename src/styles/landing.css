@@ -61,6 +61,34 @@
     background-color: #050505;
 }
 
+.reader-page {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    contain: layout paint;
+}
+
+.reader-page-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.reader-page-retry {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    padding: 1rem;
+    background: #222;
+    color: #ddd;
+    text-align: center;
+}
+
+.reader-page-retry[hidden] {
+    display: none;
+}
+
 body.reader-active .site-ghost-text-layer {
     z-index: 1;
 }
