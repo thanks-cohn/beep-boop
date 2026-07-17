@@ -36,3 +36,7 @@ __pycache__/
 backup-copy/
 
 .venv/
+
+.env.local
+.deletor-backups/
+scripts/deletor.py.before-scroll-fix

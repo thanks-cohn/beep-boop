@@ -239,31 +239,174 @@ def choose_interactive(works: list[Work]) -> list[str]:
         import curses
     except Exception:
         return choose_numbered(works)
-    selected=set(); query=""; pos=0
+
+    selected: set[str] = set()
+    query = ""
+    pos = 0
+
     def run(stdscr):
-        nonlocal query,pos,selected
-        curses.curs_set(0); stdscr.keypad(True)
+        nonlocal query, pos, selected
+
+        try:
+            curses.curs_set(0)
+        except curses.error:
+            pass
+
+        stdscr.keypad(True)
+
+        try:
+            curses.mousemask(curses.ALL_MOUSE_EVENTS)
+        except curses.error:
+            pass
+
+        def draw(row: int, col: int, value: str, width: int, attr=0):
+            if row < 0 or width <= 0:
+                return
+            try:
+                stdscr.addnstr(row, col, value, width, attr)
+            except curses.error:
+                pass
+
         while True:
-            filt=[w for w in works if query.lower() in " ".join([w.slug,w.title,w.work_id or "",*w.tags]).lower()]
-            pos=max(0,min(pos,len(filt)-1)); stdscr.erase(); h,wid=stdscr.getmaxyx()
-            stdscr.addstr(0,0,"AnimePlex deletor: Space toggle, / search, a select filtered, n clear, Enter review, q quit"[:wid-1])
-            stdscr.addstr(1,0,f"Search: {query}  Selected: {len(selected)}"[:wid-1])
-            for i,item in enumerate(filt[:max(0,h-3)]):
-                mark="[x] Delete" if item.slug in selected else "[ ] Keep  "
-                line=f"{mark} {item.title} ({item.slug})"
-                if i==pos: stdscr.attron(curses.A_REVERSE)
-                stdscr.addstr(i+2,0,line[:wid-1])
-                if i==pos: stdscr.attroff(curses.A_REVERSE)
-            ch=stdscr.getch()
-            if ch in (ord('q'),27): return []
-            if ch in (curses.KEY_DOWN,ord('j')): pos+=1
-            elif ch in (curses.KEY_UP,ord('k')): pos-=1
-            elif ch==ord(' ') and filt: selected.symmetric_difference_update([filt[pos].slug])
-            elif ch==ord('a'): selected.update(x.slug for x in filt)
-            elif ch==ord('n'): selected.clear()
-            elif ch in (10,13): return list(selected)
-            elif ch==ord('/'):
-                curses.echo(); stdscr.addstr(1,8," "*(wid-9)); stdscr.addstr(1,8,""); query=stdscr.getstr(1,8,80).decode(); curses.noecho(); pos=0
+            needle = query.casefold()
+            filtered = [
+                work for work in works
+                if needle in " ".join([
+                    work.slug,
+                    work.title,
+                    work.work_id or "",
+                    *work.tags,
+                ]).casefold()
+            ]
+
+            if filtered:
+                pos = max(0, min(pos, len(filtered) - 1))
+            else:
+                pos = 0
+
+            stdscr.erase()
+            height, width = stdscr.getmaxyx()
+
+            header_rows = 3
+            visible_rows = max(1, height - header_rows)
+
+            # Keep the highlighted item inside the visible viewport.
+            top = max(0, pos - visible_rows + 1)
+            top = min(top, max(0, len(filtered) - visible_rows))
+            visible = filtered[top:top + visible_rows]
+
+            draw(
+                0, 0,
+                "AnimePlex deletor — ↑/↓ move, Space toggle, PgUp/PgDn, "
+                "Home/End, / search, a all, n none, Enter review, q quit",
+                max(0, width - 1),
+            )
+
+            if filtered:
+                status = (
+                    f"Search: {query} | Selected: {len(selected)} | "
+                    f"Item {pos + 1}/{len(filtered)} | "
+                    f"Showing {top + 1}-{top + len(visible)}"
+                )
+            else:
+                status = (
+                    f"Search: {query} | Selected: {len(selected)} | "
+                    "No matching works"
+                )
+
+            draw(1, 0, status, max(0, width - 1))
+
+            for row, item in enumerate(visible):
+                absolute_index = top + row
+                mark = "[x] DELETE" if item.slug in selected else "[ ] Keep  "
+                line = f"{mark} {item.title} ({item.slug})"
+                attr = curses.A_REVERSE if absolute_index == pos else 0
+                draw(row + 2, 0, line, max(0, width - 1), attr)
+
+            stdscr.refresh()
+            ch = stdscr.getch()
+
+            if ch in (ord("q"), 27):
+                return []
+
+            if ch in (curses.KEY_DOWN, ord("j")):
+                if filtered:
+                    pos = min(len(filtered) - 1, pos + 1)
+
+            elif ch in (curses.KEY_UP, ord("k")):
+                if filtered:
+                    pos = max(0, pos - 1)
+
+            elif ch == curses.KEY_NPAGE:
+                if filtered:
+                    pos = min(len(filtered) - 1, pos + visible_rows)
+
+            elif ch == curses.KEY_PPAGE:
+                if filtered:
+                    pos = max(0, pos - visible_rows)
+
+            elif ch == curses.KEY_HOME:
+                pos = 0
+
+            elif ch == curses.KEY_END:
+                if filtered:
+                    pos = len(filtered) - 1
+
+            elif ch == curses.KEY_MOUSE:
+                try:
+                    _, _, _, _, button_state = curses.getmouse()
+
+                    if button_state & getattr(curses, "BUTTON4_PRESSED", 0):
+                        pos = max(0, pos - 3)
+
+                    if button_state & getattr(curses, "BUTTON5_PRESSED", 0):
+                        if filtered:
+                            pos = min(len(filtered) - 1, pos + 3)
+                except curses.error:
+                    pass
+
+            elif ch == ord(" ") and filtered:
+                selected.symmetric_difference_update([filtered[pos].slug])
+
+            elif ch == ord("a"):
+                selected.update(work.slug for work in filtered)
+
+            elif ch == ord("n"):
+                selected.clear()
+
+            elif ch in (10, 13, curses.KEY_ENTER):
+                return list(selected)
+
+            elif ch == ord("/"):
+                curses.echo()
+                try:
+                    curses.curs_set(1)
+                except curses.error:
+                    pass
+
+                prompt = "Search: "
+                draw(1, 0, " " * max(0, width - 1), max(0, width - 1))
+                draw(1, 0, prompt, max(0, width - 1))
+                stdscr.refresh()
+
+                maximum = max(1, min(200, width - len(prompt) - 1))
+
+                try:
+                    query = stdscr.getstr(
+                        1, len(prompt), maximum
+                    ).decode("utf-8", errors="replace")
+                except curses.error:
+                    query = ""
+
+                curses.noecho()
+
+                try:
+                    curses.curs_set(0)
+                except curses.error:
+                    pass
+
+                pos = 0
+
     return curses.wrapper(run)
 
 
