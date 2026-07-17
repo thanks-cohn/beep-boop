@@ -21,6 +21,22 @@ function uniqueUrls(urls) {
     return [...new Set(urls.filter(Boolean))];
 }
 
+function humanizeChapterPart(part) {
+    const value = String(part || "").replace(/_/g, " ").trim();
+    if (!value) return "";
+    if (/^oneshot$/i.test(value)) return "Oneshot";
+    return value.replace(/\b(volume|vol|chapter|ch)\s*([\d.]+)\b/gi, (_, kind, number) =>
+        `${/^v/i.test(kind) ? "Volume" : "Chapter"} ${number}`
+    ).replace(/\b\w/g, letter => letter.toUpperCase());
+}
+
+/** Turn storage chapter identifiers into UI copy without inventing a volume. */
+export function formatChapterLabel(chapter, displayLabel) {
+    if (displayLabel) return String(displayLabel);
+    if (!chapter) return "";
+    return String(chapter).split("/").filter(Boolean).map(humanizeChapterPart).filter(Boolean).join(" · ");
+}
+
 class LruCache {
     constructor(maximum) {
         this.maximum = maximum;
@@ -101,6 +117,7 @@ export class Rotunda {
         let hovered = false;
         let touchStart = null;
         let touchMoved = false;
+        const thumbnailStats = { started: 0, reused: 0, prevented: 0, stale: 0 };
 
         const viewport = document.createElement("div");
         viewport.className = "rotunda-scroll-viewport";
@@ -110,16 +127,64 @@ export class Rotunda {
         status.className = "rotunda-status";
         status.setAttribute("aria-live", "polite");
         status.setAttribute("aria-atomic", "true");
-        viewport.append(track, status);
+        const caption = document.createElement("div");
+        caption.className = "rotunda-active-caption";
+        const titleViewport = document.createElement("div");
+        titleViewport.className = "rotunda-title-viewport";
+        const titleTrack = document.createElement("span");
+        titleTrack.className = "rotunda-title-track";
+        const chapterLabel = document.createElement("div");
+        chapterLabel.className = "rotunda-chapter-label";
+        titleViewport.append(titleTrack);
+        caption.append(titleViewport, chapterLabel);
+        viewport.append(track, caption, status);
         container.replaceChildren(viewport);
 
-        function clearImage(record) {
+        let captionMeasureFrame = 0;
+        function measureCaption() {
+            cancelAnimationFrame(captionMeasureFrame);
+            captionMeasureFrame = requestAnimationFrame(() => {
+                captionMeasureFrame = 0;
+                titleTrack.classList.remove("is-overflowing");
+                titleTrack.style.removeProperty("--ticker-distance");
+                if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+                const overflow = titleTrack.scrollWidth - titleViewport.clientWidth;
+                if (overflow > 1) {
+                    titleTrack.style.setProperty("--ticker-distance", `${overflow}px`);
+                    titleTrack.style.setProperty("--ticker-duration", `${Math.max(8, overflow / 24 + 4)}s`);
+                    titleTrack.classList.add("is-overflowing");
+                }
+            });
+        }
+
+        let captionKey = null;
+        function updateCaption(card) {
+            const label = formatChapterLabel(card?.chapter, card?.chapterDisplay);
+            const nextKey = `${card?.slug || ""}\u0000${card?.title || ""}\u0000${label}`;
+            if (captionKey === nextKey) return;
+            captionKey = nextKey;
+            titleTrack.classList.remove("is-overflowing");
+            titleTrack.textContent = card?.title || "";
+            titleTrack.title = card?.title || "";
+            titleTrack.setAttribute("aria-label", card?.title || "");
+            chapterLabel.textContent = label;
+            caption.setAttribute("aria-label", [card?.title, label].filter(Boolean).join(", "));
+            measureCaption();
+        }
+
+        function clearImage(record, reason = "eviction") {
+            if (import.meta.env.DEV && reason === "position" && record.loadedUrl) {
+                console.warn("Rotunda retained thumbnail was cleared during a position-only update.", record.card?.slug);
+            }
             record.imageAbort?.abort();
             record.imageAbort = null;
             record.img.onload = null;
             record.img.onerror = null;
             record.img.removeAttribute("src");
             record.button.style.removeProperty("--rotunda-reflection-image");
+            record.loadedUrl = null;
+            record.pendingUrl = null;
+            record.thumbnailKey = null;
         }
 
         function unmount(record) {
@@ -128,57 +193,90 @@ export class Rotunda {
             record.button.remove();
         }
 
-        function setThumbnail(record, card, signal) {
-            clearImage(record);
-            const controller = new AbortController();
-            record.imageAbort = controller;
-            signal.addEventListener("abort", () => controller.abort(), { once: true });
-            let candidate = 0;
-            let triedFirstPage = false;
-
-            const assign = url => {
-                if (!url || controller.signal.aborted) return;
-                record.img.style.visibility = "visible";
-                record.img.src = url;
-                record.button.style.setProperty("--rotunda-reflection-image", `url("${url}")`);
-            };
-            record.img.onerror = async () => {
-                if (controller.signal.aborted) return;
-                record.img.style.visibility = "hidden";
-                candidate += 1;
-                if (card.imageCandidates[candidate]) {
-                    assign(card.imageCandidates[candidate]);
-                    return;
-                }
-                if (triedFirstPage || !card.chapter) return;
-                triedFirstPage = true;
-                const key = Storage.manifest(card.source, card.slug, card.chapter);
-                let promise = thumbnailCache.get(key);
-                if (!promise) {
-                    promise = fetch(key, { signal: controller.signal })
-                        .then(response => {
-                            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                            return response.json();
-                        })
-                        .then(json => {
-                            const manifest = resolveManifest(json, card.source, card.slug, card.chapter);
-                            return `${manifest.base_url}/${String(1).padStart(manifest.padding ?? 3, "0")}.${manifest.extension || "webp"}`;
-                        })
-                        .catch(error => {
-                            if (thumbnailCache.get(key) === promise) thumbnailCache.delete(key);
-                            throw error;
-                        });
-                    thumbnailCache.set(key, promise);
-                }
-                try { assign(await promise); }
-                catch (error) {
-                    if (error.name !== "AbortError") warnDev(`Rotunda: thumbnail fallbacks failed for "${card.slug}".`, error);
-                }
-            };
-            assign(card.imageCandidates[0]);
+        function imageReady(url, signal) {
+            return new Promise((resolve, reject) => {
+                const image = new Image();
+                image.decoding = "async";
+                let settled = false;
+                const finish = callback => { if (!settled) { settled = true; callback(url); } };
+                image.onload = () => {
+                    if (typeof image.decode === "function") image.decode().then(() => finish(resolve), () => finish(resolve));
+                    else finish(resolve);
+                };
+                image.onerror = () => finish(() => reject(new Error(`Thumbnail failed: ${url}`)));
+                signal.addEventListener("abort", () => finish(() => reject(new DOMException("Aborted", "AbortError"))), { once: true });
+                image.src = url;
+                if (image.complete && image.naturalWidth) finish(resolve);
+            });
         }
 
-        function updateRecord(record, card, entry, signal) {
+        async function firstPageUrl(card, signal) {
+            if (!card.chapter) return null;
+            const key = Storage.manifest(card.source, card.slug, card.chapter);
+            let promise = thumbnailCache.get(key);
+            if (!promise) {
+                promise = fetch(key, { signal }).then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.json();
+                }).then(json => {
+                    const manifest = resolveManifest(json, card.source, card.slug, card.chapter);
+                    return `${manifest.base_url}/${String(1).padStart(manifest.padding ?? 3, "0")}.${manifest.extension || "webp"}`;
+                }).catch(error => {
+                    if (thumbnailCache.get(key) === promise) thumbnailCache.delete(key);
+                    throw error;
+                });
+                thumbnailCache.set(key, promise);
+            }
+            return promise;
+        }
+
+        function setThumbnail(record, card) {
+            const thumbnailKey = card.imageCandidates.join("\u0000");
+            if (record.cardSlug === card.slug && record.thumbnailKey === thumbnailKey && (record.loadedUrl || record.pendingUrl)) {
+                thumbnailStats.reused += 1;
+                thumbnailStats.prevented += 1;
+                return;
+            }
+            clearImage(record, "reassignment");
+            const controller = new AbortController();
+            record.imageAbort = controller;
+            const assignment = ++record.assignmentGeneration;
+            record.cardSlug = card.slug;
+            record.thumbnailKey = thumbnailKey;
+            record.pendingUrl = card.imageCandidates[0] || "fallback";
+            record.button.classList.remove("is-thumbnail-ready", "is-thumbnail-failed");
+            record.button.classList.add("is-thumbnail-loading");
+            thumbnailStats.started += 1;
+            (async () => {
+                const candidates = [...card.imageCandidates];
+                let applied = null;
+                for (const url of candidates) {
+                    try { applied = await imageReady(url, controller.signal); break; } catch (error) { if (error.name === "AbortError") return; }
+                }
+                if (!applied) {
+                    try {
+                        const fallback = await firstPageUrl(card, controller.signal);
+                        if (fallback) applied = await imageReady(fallback, controller.signal);
+                    } catch (error) { if (error.name === "AbortError") return; }
+                }
+                if (destroyed || controller.signal.aborted || record.assignmentGeneration !== assignment || record.cardSlug !== card.slug || record.thumbnailKey !== thumbnailKey) {
+                    thumbnailStats.stale += 1;
+                    return;
+                }
+                record.pendingUrl = null;
+                record.button.classList.remove("is-thumbnail-loading");
+                if (!applied) {
+                    record.button.classList.add("is-thumbnail-failed");
+                    return;
+                }
+                record.img.src = applied;
+                record.button.style.setProperty("--rotunda-reflection-image", `url("${applied}")`);
+                record.loadedUrl = applied;
+                record.button.classList.add("is-thumbnail-ready");
+            })();
+        }
+
+        function updateRecord(record, card, entry) {
             record.card = card;
             record.button.dataset.logicalIndex = String(entry.index);
             record.button.dataset.rotundaPosition = entry.visible ? String(entry.distance) : "buffered";
@@ -187,14 +285,16 @@ export class Rotunda {
             record.button.setAttribute("aria-current", entry.distance === 0 ? "true" : "false");
             record.button.setAttribute("aria-hidden", entry.visible ? "false" : "true");
             record.button.tabIndex = entry.visible && Math.abs(entry.distance) <= 2 ? 0 : -1;
-            record.button.setAttribute("aria-label", card.chapter ? `Open ${card.title}` : card.title);
+            const chapterText = formatChapterLabel(card.chapter, card.chapterDisplay);
+            record.button.setAttribute("aria-label", card.chapter ? `Open ${card.title}, ${chapterText}` : card.title);
             record.img.alt = card.title;
             record.overlayTitle.textContent = card.title;
-            record.title.textContent = card.title;
-            setThumbnail(record, card, signal);
+            record.action.textContent = chapterText ? `Start ${chapterText}` : "Unavailable";
+            setThumbnail(record, card);
+            if (entry.distance === 0) updateCaption(card);
         }
 
-        function mount(entry, card, signal) {
+        function mount(entry, card) {
             const button = document.createElement("button");
             button.className = "rotunda-card";
             button.type = "button";
@@ -208,17 +308,14 @@ export class Rotunda {
             overlayTitle.className = "rotunda-overlay-title";
             const action = document.createElement("span");
             action.className = "rotunda-overlay-action";
-            action.textContent = "Start Volume 1 · Chapter 1";
-            const title = document.createElement("div");
-            title.className = "rotunda-title";
             overlay.append(overlayTitle, action);
             frame.append(img, overlay);
-            button.append(frame, title);
-            const record = { button, img, overlayTitle, title, card: null, imageAbort: null };
+            button.append(frame);
+            const record = { button, img, overlayTitle, action, card: null, cardSlug: null, imageAbort: null, thumbnailKey: null, loadedUrl: null, pendingUrl: null, assignmentGeneration: 0 };
             button.onclick = () => {
                 if (!touchMoved && record.card?.chapter) openReader(record.card);
             };
-            updateRecord(record, card, entry, signal);
+            updateRecord(record, card, entry);
             track.append(button);
             return record;
         }
@@ -231,6 +328,13 @@ export class Rotunda {
                 absoluteActiveIndex,
                 mountedDomCardCount: track.querySelectorAll(".rotunda-card").length,
                 loadedImageCount: records.filter(record => record.img.hasAttribute("src")).length,
+                readyThumbnailCount: records.filter(record => record.button.classList.contains("is-thumbnail-ready")).length,
+                loadingThumbnailCount: records.filter(record => record.button.classList.contains("is-thumbnail-loading")).length,
+                failedThumbnailCount: records.filter(record => record.button.classList.contains("is-thumbnail-failed")).length,
+                thumbnailAssignmentsStarted: thumbnailStats.started,
+                thumbnailAssignmentsReused: thumbnailStats.reused,
+                unnecessaryReloadsPrevented: thumbnailStats.prevented,
+                staleThumbnailCompletionsDiscarded: thumbnailStats.stale,
                 visibleIndices: entries.filter(entry => entry.visible).map(entry => entry.index),
                 bufferedIndices: entries.filter(entry => !entry.visible).map(entry => entry.index),
                 metadataCacheSize: metadataCache.size,
@@ -266,6 +370,7 @@ export class Rotunda {
                     title: resolved.display || base.title,
                     source,
                     chapter,
+                    chapterDisplay: resolved.chapter_labels?.[chapter] || resolved.chapterLabels?.[chapter],
                     imageCandidates: uniqueUrls([work.thumb, resolved.thumb, `${Storage.work(source, work.slug)}/thumb.webp`])
                 };
                 metadataCache.set(work.slug, card);
@@ -294,27 +399,28 @@ export class Rotunda {
                 const base = metadataCache.get(works[entry.index].slug) || initialCard(works[entry.index], sources, defaultSource);
                 if (!base) continue;
                 const existing = mounted.get(entry.index);
-                if (existing) updateRecord(existing, base, entry, signal);
-                else mounted.set(entry.index, mount(entry, base, signal));
+                if (existing) updateRecord(existing, base, entry);
+                else mounted.set(entry.index, mount(entry, base));
             }
             const activeEntry = entries.find(entry => entry.distance === 0);
             if (activeEntry) status.textContent = `${works[activeEntry.index].display || works[activeEntry.index].slug}. Work ${activeEntry.index + 1} of ${works.length}.`;
             else status.textContent = "No works available.";
             assertBounds(entries);
 
+            const prioritizedEntries = [...entries].sort((a, b) => Math.abs(a.distance) - Math.abs(b.distance));
             let cursor = 0;
             const worker = async () => {
-                while (!signal.aborted && cursor < entries.length) {
-                    const entry = entries[cursor++];
+                while (!signal.aborted && cursor < prioritizedEntries.length) {
+                    const entry = prioritizedEntries[cursor++];
                     const card = await resolveEntry(entry, localGeneration, signal);
                     if (!card || signal.aborted || localGeneration !== generation) continue;
                     const record = mounted.get(entry.index);
-                    if (record) updateRecord(record, card, entry, signal);
+                    if (record) updateRecord(record, card, entry);
                     if (entry.distance === 0) status.textContent = `${card.title}. Work ${entry.index + 1} of ${works.length}.`;
                 }
                 assertBounds(entries);
             };
-            for (let i = 0; i < Math.min(ROTUNDA_REQUEST_CONCURRENCY, entries.length); i += 1) worker();
+            for (let i = 0; i < Math.min(ROTUNDA_REQUEST_CONCURRENCY, prioritizedEntries.length); i += 1) worker();
         }
 
         const moveBy = direction => {
@@ -372,13 +478,30 @@ export class Rotunda {
         viewport.addEventListener("pointerup", pointerUp);
         window.addEventListener("keydown", keydown);
 
+        let lastCaptionWidth = titleViewport.clientWidth;
+        let resizeTimer = 0;
+        const resizeCaption = () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = window.setTimeout(() => {
+                const width = titleViewport.clientWidth;
+                if (Math.abs(width - lastCaptionWidth) > 2) {
+                    lastCaptionWidth = width;
+                    measureCaption();
+                }
+            }, 160);
+        };
+        window.addEventListener("resize", resizeCaption, { passive: true });
+
         if (import.meta.env.DEV) window.__rotundaDiagnostics = diagnostics;
         Rotunda.cleanup = () => {
             if (destroyed) return;
             destroyed = true;
             generation += 1;
             renderController?.abort();
+            cancelAnimationFrame(captionMeasureFrame);
+            clearTimeout(resizeTimer);
             window.removeEventListener("keydown", keydown);
+            window.removeEventListener("resize", resizeCaption);
             container.removeEventListener("pointerenter", pointerEnter);
             container.removeEventListener("pointerleave", pointerLeave);
             viewport.removeEventListener("pointerdown", pointerDown);
