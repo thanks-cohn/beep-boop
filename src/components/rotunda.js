@@ -133,25 +133,24 @@ export class Rotunda {
         titleViewport.className = "rotunda-title-viewport";
         const titleTrack = document.createElement("span");
         titleTrack.className = "rotunda-title-track";
-        const chapterLabel = document.createElement("div");
-        chapterLabel.className = "rotunda-chapter-label";
         titleViewport.append(titleTrack);
-        caption.append(titleViewport, chapterLabel);
+        caption.append(titleViewport);
         viewport.append(track, caption, status);
         container.replaceChildren(viewport);
 
         let captionMeasureFrame = 0;
         function measureCaption() {
             cancelAnimationFrame(captionMeasureFrame);
+            titleTrack.classList.remove("is-overflowing");
+            titleTrack.style.removeProperty("--ticker-distance");
+            titleTrack.style.removeProperty("--ticker-duration");
             captionMeasureFrame = requestAnimationFrame(() => {
                 captionMeasureFrame = 0;
-                titleTrack.classList.remove("is-overflowing");
-                titleTrack.style.removeProperty("--ticker-distance");
                 if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
                 const overflow = titleTrack.scrollWidth - titleViewport.clientWidth;
                 if (overflow > 1) {
                     titleTrack.style.setProperty("--ticker-distance", `${overflow}px`);
-                    titleTrack.style.setProperty("--ticker-duration", `${Math.max(8, overflow / 24 + 4)}s`);
+                    titleTrack.style.setProperty("--ticker-duration", `${Math.max(9, overflow / 22 + 5)}s`);
                     titleTrack.classList.add("is-overflowing");
                 }
             });
@@ -159,16 +158,14 @@ export class Rotunda {
 
         let captionKey = null;
         function updateCaption(card) {
-            const label = formatChapterLabel(card?.chapter, card?.chapterDisplay);
-            const nextKey = `${card?.slug || ""}\u0000${card?.title || ""}\u0000${label}`;
+            const nextKey = `${card?.slug || ""}\u0000${card?.title || ""}`;
             if (captionKey === nextKey) return;
             captionKey = nextKey;
             titleTrack.classList.remove("is-overflowing");
             titleTrack.textContent = card?.title || "";
             titleTrack.title = card?.title || "";
             titleTrack.setAttribute("aria-label", card?.title || "");
-            chapterLabel.textContent = label;
-            caption.setAttribute("aria-label", [card?.title, label].filter(Boolean).join(", "));
+            caption.setAttribute("aria-label", card?.title || "");
             measureCaption();
         }
 
@@ -288,8 +285,6 @@ export class Rotunda {
             const chapterText = formatChapterLabel(card.chapter, card.chapterDisplay);
             record.button.setAttribute("aria-label", card.chapter ? `Open ${card.title}, ${chapterText}` : card.title);
             record.img.alt = card.title;
-            record.overlayTitle.textContent = card.title;
-            record.action.textContent = chapterText ? `Start ${chapterText}` : "Unavailable";
             setThumbnail(record, card);
             if (entry.distance === 0) updateCaption(card);
         }
@@ -302,16 +297,9 @@ export class Rotunda {
             frame.className = "rotunda-cover-frame";
             const img = document.createElement("img");
             img.className = "rotunda-cover";
-            const overlay = document.createElement("div");
-            overlay.className = "rotunda-overlay";
-            const overlayTitle = document.createElement("span");
-            overlayTitle.className = "rotunda-overlay-title";
-            const action = document.createElement("span");
-            action.className = "rotunda-overlay-action";
-            overlay.append(overlayTitle, action);
-            frame.append(img, overlay);
+            frame.append(img);
             button.append(frame);
-            const record = { button, img, overlayTitle, action, card: null, cardSlug: null, imageAbort: null, thumbnailKey: null, loadedUrl: null, pendingUrl: null, assignmentGeneration: 0 };
+            const record = { button, img, card: null, cardSlug: null, imageAbort: null, thumbnailKey: null, loadedUrl: null, pendingUrl: null, assignmentGeneration: 0 };
             button.onclick = () => {
                 if (!touchMoved && record.card?.chapter) openReader(record.card);
             };
