@@ -31,6 +31,18 @@ function chapterLabel(chapter) {
         .replaceAll("/", " / ");
 }
 
+function setResponsiveButtonLabel(button, full, compact, accessibleLabel = full) {
+    button.setAttribute("aria-label", accessibleLabel);
+    const fullLabel = document.createElement("span");
+    fullLabel.className = "reader-button-label-full";
+    fullLabel.textContent = full;
+    const compactLabel = document.createElement("span");
+    compactLabel.className = "reader-button-label-compact";
+    compactLabel.setAttribute("aria-hidden", "true");
+    compactLabel.textContent = compact;
+    button.append(fullLabel, compactLabel);
+}
+
 function buildReaderNavBar(source, work, chapter, chapters, options = {}) {
     const currentIndex = chapters.indexOf(chapter);
 
@@ -40,7 +52,7 @@ function buildReaderNavBar(source, work, chapter, chapters, options = {}) {
     const homeButton = document.createElement("button");
     homeButton.className = "reader-home-button";
     homeButton.type = "button";
-    homeButton.textContent = "⌂ Home";
+    setResponsiveButtonLabel(homeButton, "Home", "⌂");
     homeButton.addEventListener("click", () => {
         document.body.classList.remove("reader-active");
         window.location.href = "/";
@@ -49,7 +61,7 @@ function buildReaderNavBar(source, work, chapter, chapters, options = {}) {
     const prevButton = document.createElement("button");
     prevButton.className = "reader-home-button";
     prevButton.type = "button";
-    prevButton.textContent = "← Previous";
+    setResponsiveButtonLabel(prevButton, "← Previous", "← Prev", "Previous chapter");
     prevButton.disabled = currentIndex <= 0;
     prevButton.addEventListener("click", () => {
         if (currentIndex > 0) {
@@ -75,7 +87,7 @@ function buildReaderNavBar(source, work, chapter, chapters, options = {}) {
     const nextButton = document.createElement("button");
     nextButton.className = "reader-home-button";
     nextButton.type = "button";
-    nextButton.textContent = "Next →";
+    setResponsiveButtonLabel(nextButton, "Next →", "Next →", "Next chapter");
     nextButton.disabled = currentIndex < 0 || currentIndex >= chapters.length - 1;
     nextButton.addEventListener("click", () => {
         if (currentIndex >= 0 && currentIndex < chapters.length - 1) {
@@ -86,7 +98,7 @@ function buildReaderNavBar(source, work, chapter, chapters, options = {}) {
     const lastButton = document.createElement("button");
     lastButton.className = "reader-home-button";
     lastButton.type = "button";
-    lastButton.textContent = "Last";
+    setResponsiveButtonLabel(lastButton, "Last", "Last", "Last chapter");
     lastButton.disabled = chapters.length === 0 || currentIndex === chapters.length - 1;
     lastButton.addEventListener("click", () => {
         if (chapters.length > 0) {

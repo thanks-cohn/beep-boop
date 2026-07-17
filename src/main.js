@@ -8,6 +8,8 @@ async function boot() {
         startGhostText().catch(error => console.warn("Ghost text failed to start.", error));
         await Page.start();
         Footer.start();
+        document.documentElement.dataset.appState = "ready";
+        window.__finishStartup?.();
     } catch (error) {
         console.error("Page failed to start.", error);
 
@@ -21,7 +23,15 @@ async function boot() {
                 </div>
             `;
         }
+        document.documentElement.dataset.appState = "error";
+        window.__finishStartup?.();
     }
 }
 
-boot();
+boot().catch(error => {
+    console.error("Unexpected startup failure.", error);
+    const container = document.getElementById("reader-container");
+    if (container) container.innerHTML = `<div class="reader-error"><h2>Unable to load page.</h2><p>Please reload and try again.</p></div>`;
+    document.documentElement.dataset.appState = "error";
+    window.__finishStartup?.();
+});
