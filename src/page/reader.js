@@ -3,6 +3,7 @@ import { resolveManifest } from "../storage/manifest_resolver.js";
 import { loadWork } from "../storage/work_manifest.js";
 import { Blocks } from "../components/blocks.js";
 import { Search } from "../components/search.js";
+import { mountDiscussion } from "../discussion/discussion.js";
 
 // At most WINDOW_BEFORE + the active page + WINDOW_AFTER images are retained.
 // Keep these deliberately conservative for Safari's decoded-image memory budget.
@@ -434,6 +435,13 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
         search: false
     });
     wrapper.appendChild(bottomReaderBar);
+
+    const workManifest = await loadWork(work);
+    if (session.disposed || generation !== renderGeneration) return;
+    const parentWorkId = workManifest?.parent_work_id;
+    if (parentWorkId !== undefined && parentWorkId !== null) {
+        session.cleanups.push(mountDiscussion(wrapper, String(parentWorkId)));
+    }
 
     const layoutParts = ensureReaderBlockLayout(root);
     layoutParts.content.replaceChildren(wrapper);
