@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "../utils/retry.js";
 import fetchData from "../data/fetch.json";
 import { Storage } from "./storage.js";
 
@@ -61,13 +62,7 @@ export async function loadWork(workSlug, catalog = fetchData, options = {}) {
     const source = work.source || catalog.default?.source || fetchData.default?.source || "e";
     const resolvedUrl = url || `${Storage.work(source, work.slug)}/item.json`;
 
-    const promise = fetch(resolvedUrl, { signal: options.signal })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Work manifest failed: ${response.status}`);
-            }
-            return response.json();
-        })
+    const promise = fetchWithRetry(resolvedUrl, { signal: options.signal }, { parse: "json", retries: 10, signal: options.signal })
         .then(manifest => ({
             ...manifest,
             ...work,

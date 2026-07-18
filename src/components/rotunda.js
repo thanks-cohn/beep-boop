@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "../utils/retry.js";
 import { Storage } from "../storage/storage.js";
 import { resolveManifest } from "../storage/manifest_resolver.js";
 import { loadWork } from "../storage/work_manifest.js";
@@ -212,10 +213,7 @@ export class Rotunda {
             const key = Storage.manifest(card.source, card.slug, card.chapter);
             let promise = thumbnailCache.get(key);
             if (!promise) {
-                promise = fetch(key, { signal }).then(response => {
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    return response.json();
-                }).then(json => {
+                promise = fetchWithRetry(key, { signal }, { parse: "json", retries: 10, signal }).then(json => {
                     const manifest = resolveManifest(json, card.source, card.slug, card.chapter);
                     return `${manifest.base_url}/${String(1).padStart(manifest.padding ?? 3, "0")}.${manifest.extension || "webp"}`;
                 }).catch(error => {

@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "../utils/retry.js";
 import blocksData from "../data/blocks.json";
 
 const IMAGE_PATTERN = /\.(avif|bmp|gif|jpe?g|png|svg|webp)(\?.*)?$/i;
@@ -5,9 +6,7 @@ const HTML_PATTERN = /\.html?(\?.*)?$/i;
 const PLACEMENTS = ["left", "center", "right"];
 
 async function loadText(path) {
-    const response = await fetch(path);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return response.text();
+    return fetchWithRetry(path, {}, { parse: "text", retries: 10 });
 }
 
 function normalizeBlock(item) {
@@ -170,6 +169,36 @@ function itemsForPlacement(config, placement) {
     return raw.slice().sort((a, b) => (normalizeBlock(a)?.order ?? 0) - (normalizeBlock(b)?.order ?? 0));
 }
 
+function cycleReaderRail(target) {
+    if (!target?.closest?.(".reader-block-layout")) return;
+    const originals = [...target.children].filter(child => child.dataset.railClone !== "true");
+    target.querySelectorAll('[data-rail-clone="true"]').forEach(clone => clone.remove());
+    if (!originals.length) return;
+
+    const layout = target.closest(".reader-block-layout");
+    const neededHeight = Math.max(layout?.scrollHeight || 0, document.documentElement.scrollHeight || 0);
+    const cycleHeight = Math.max(1, originals.reduce((sum, child) => sum + child.getBoundingClientRect().height, 0));
+    const repeatCount = Math.min(40, Math.max(0, Math.ceil(neededHeight / cycleHeight) + 1));
+
+    const fragment = document.createDocumentFragment();
+    for (let repeat = 1; repeat < repeatCount; repeat += 1) {
+        for (const original of originals) {
+            const clone = original.cloneNode(true);
+            clone.dataset.railClone = "true";
+            clone.setAttribute("aria-hidden", "true");
+            fragment.appendChild(clone);
+        }
+    }
+    target.appendChild(fragment);
+}
+
+function refreshReaderRails(containers) {
+    requestAnimationFrame(() => {
+        cycleReaderRail(containers.left);
+        cycleReaderRail(containers.right);
+    });
+}
+
 export async function renderBlocksIntoContainers(options = {}) {
     const page = options.page || "landing";
     const config = options.blocksData || blocksData || {};
@@ -184,6 +213,7 @@ export async function renderBlocksIntoContainers(options = {}) {
         itemsForPlacement(config, placement),
         page
     )));
+    if (page === "reader") refreshReaderRails(containers);
 }
 
 export class Blocks {

@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "../utils/retry.js";
 // src/fetch/fetch.js
 
 import { Storage } from "../storage/storage.js";
@@ -15,13 +16,7 @@ export class Fetch {
             return this.#cache;
         }
 
-        const response = await fetch(FETCH_FILE);
-
-        if (!response.ok) {
-            throw new Error(`Unable to load ${FETCH_FILE}`);
-        }
-
-        this.#cache = await response.json();
+        this.#cache = await fetchWithRetry(FETCH_FILE, {}, { parse: "json", retries: 10 });
 
         return this.#cache;
 
@@ -59,13 +54,7 @@ export class Fetch {
 
         );
 
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            throw new Error(`Unable to load ${url}`);
-        }
-
-        let manifest = await response.json();
+        let manifest = await fetchWithRetry(url, {}, { parse: "json", retries: 10 });
         manifest = resolveManifest(manifest, work.source, work.slug, chapterPath);
         return manifest;
 

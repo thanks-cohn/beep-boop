@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "../utils/retry.js";
 import { Storage } from "../storage/storage.js";
 import { resolveManifest } from "../storage/manifest_resolver.js";
 import { loadWork } from "../storage/work_manifest.js";
@@ -232,9 +233,20 @@ function createVirtualReader(wrapper, manifest, session) {
         };
         img.onerror = () => {
             if (session.disposed || page.image !== img) return;
+            clearTimeout(page.retryTimer);
             unload(page);
+            if ((page.attempts || 0) < 10) {
+                page.attempts = (page.attempts || 0) + 1;
+                page.element.classList.add("reader-page-reconnecting");
+                page.retryTimer = setTimeout(() => {
+                    page.retryTimer = null;
+                    if (!session.disposed) load(page);
+                }, Math.min(4500, 350 * (1.55 ** (page.attempts - 1))));
+                return;
+            }
             page.failed = true;
             page.element.classList.add("reader-page-error");
+            page.element.classList.remove("reader-page-reconnecting");
             page.error.hidden = false;
         };
         page.element.insertBefore(img, page.error);
@@ -266,8 +278,10 @@ function createVirtualReader(wrapper, manifest, session) {
         const retry = () => {
             if (session.disposed) return;
             page.failed = false;
+            page.attempts = 0;
+            clearTimeout(page.retryTimer);
             error.hidden = true;
-            element.classList.remove("reader-page-error");
+            element.classList.remove("reader-page-error", "reader-page-reconnecting");
             load(page);
         };
         page.retry = retry;
@@ -312,6 +326,7 @@ function createVirtualReader(wrapper, manifest, session) {
         if (scrollFrame !== null) cancelAnimationFrame(scrollFrame);
         pages.forEach(page => {
             page.error.removeEventListener("click", page.retry);
+            clearTimeout(page.retryTimer);
             unload(page);
         });
         pages.length = 0;
@@ -393,12 +408,12 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
 
     let manifest;
     try {
-        manifest = await fetch(manifestUrl).then(r => {
-            if (!r.ok) {
-                throw new Error(`Manifest failed: ${r.status}`);
-            }
-            return r.json();
+        manifest = await fetchWithRetry(manifestUrl, {}, {
+            parse: "json",
+            retries: 10,
+            onRetry: () => root.dataset.readerState = "reconnecting"
         });
+        delete root.dataset.readerState;
     } catch (error) {
         if (session.disposed) return;
         throw error;
@@ -480,9 +495,12 @@ export class Reader {
             container.replaceChildren();
             container.innerHTML = `
                 <div class="reader-error">
-                    <h2>Failed to load chapter</h2>
+                    <h2>This chapter is taking a while to load.</h2>
+                    <p>We retried automatically and could not reconnect.</p>
+                    <button type="button" class="reader-error-retry">Try again</button>
                 </div>
             `;
+            container.querySelector(".reader-error-retry")?.addEventListener("click", () => Reader.start(work, chapter));
         }
     }
 }
@@ -510,8 +528,11 @@ window.addEventListener("open-reader", async (e) => {
 
         root.innerHTML = `
             <div class="reader-error">
-                <h2>Failed to load chapter</h2>
+                <h2>This chapter is taking a while to load.</h2>
+                <p>We retried automatically and could not reconnect.</p>
+                <button type="button" class="reader-error-retry">Try again</button>
             </div>
         `;
+        root.querySelector(".reader-error-retry")?.addEventListener("click", () => renderManifestInto(root, manifestUrl, source, work, chapter));
     }
 });

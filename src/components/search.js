@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "../utils/retry.js";
 import { normalize } from "../utils/normalize.js";
 
 const SEARCH_INDEX_URL = "/data/search.index.json";
@@ -5,13 +6,7 @@ let searchIndexPromise = null;
 
 function loadSearchIndex() {
     if (!searchIndexPromise) {
-        searchIndexPromise = fetch(SEARCH_INDEX_URL, {
-            cache: "no-store",
-        })
-            .then(response => {
-                if (!response.ok) throw new Error(`Search index failed: ${response.status}`);
-                return response.json();
-            })
+        searchIndexPromise = fetchWithRetry(SEARCH_INDEX_URL, { cache: "no-store" }, { parse: "json", retries: 10 })
             .then(data => data.entries || []);
     }
 

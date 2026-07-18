@@ -26,12 +26,23 @@
     </style>
     <script>
         (() => {
+            const retryKey = "animeplex-startup-retries";
             const fail = () => {
+                const count = Number(sessionStorage.getItem(retryKey) || "0");
+                if (count < 10) {
+                    sessionStorage.setItem(retryKey, String(count + 1));
+                    window.setTimeout(() => window.location.reload(), Math.min(4500, 350 * (1.55 ** count)));
+                    return;
+                }
                 const shell = document.querySelector(".startup-shell");
                 if (!shell) return;
                 shell.classList.add("startup-shell-error");
                 shell.setAttribute("aria-busy", "false");
-                shell.innerHTML = "<div><strong>Unable to start Doku-Doujin.</strong><br><span>Please reload the page.</span></div>";
+                shell.innerHTML = `<div><strong>Doku-Doujin needs a little help reconnecting.</strong><br><span>Please try again.</span><br><button type="button" id="startup-retry-button">Try again</button></div>`;
+                document.getElementById("startup-retry-button")?.addEventListener("click", () => {
+                    sessionStorage.removeItem(retryKey);
+                    window.location.reload();
+                });
             };
             const resourceError = event => {
                 if (event.target?.tagName === "SCRIPT") fail();
@@ -39,6 +50,7 @@
             window.addEventListener("error", resourceError, true);
             window.addEventListener("unhandledrejection", fail);
             window.__finishStartup = () => {
+                sessionStorage.removeItem(retryKey);
                 window.removeEventListener("error", resourceError, true);
                 window.removeEventListener("unhandledrejection", fail);
                 delete window.__finishStartup;
