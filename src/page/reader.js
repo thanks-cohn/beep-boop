@@ -19,9 +19,10 @@ const ESTIMATED_ASPECT_RATIO = 2 / 3;
 let currentReader = null;
 let renderGeneration = 0;
 
-async function getChapterList(workSlug) {
-    const work = await loadWork(workSlug);
-    return work?.chapters || [];
+function performanceMark(name) {
+    if (import.meta.env.DEV && typeof performance !== "undefined" && performance.mark) {
+        performance.mark(`reader:${name}`);
+    }
 }
 
 function openChapter(source, work, chapter) {
@@ -153,17 +154,13 @@ function createBookmarkControl(session, workId) {
     button.type = "button";
     button.className = "discussion-button reader-bookmark-button";
     button.setAttribute("aria-pressed", "false");
-    button.textContent = "Bookmark";
+    button.textContent = workId === undefined ? "Bookmark loading…" : "Bookmark";
     let active = false;
     let busy = false;
-    const id = normalizeBookmarkId(workId);
-    if (!id) {
-        button.disabled = true;
-        button.textContent = "Bookmark unavailable";
-        if (import.meta.env.DEV) console.warn("Reader bookmark unavailable: missing parent_work_id", { work: session.route?.work });
-        return button;
-    }
-    queueMicrotask(async () => {
+    let id = normalizeBookmarkId(workId);
+    const setId = nextId => { id = normalizeBookmarkId(nextId); if (!id) { button.disabled = true; button.textContent = "Bookmark unavailable"; return false; } button.disabled = false; button.textContent = "Bookmark"; return true; };
+    const hydrate = async nextId => {
+        if (!setId(nextId)) return;
         try {
             const state = await getBookmarkState(id);
             if (session.disposed) return;
@@ -171,9 +168,11 @@ function createBookmarkControl(session, workId) {
             button.setAttribute("aria-pressed", String(active));
             button.textContent = active ? "Bookmarked" : "Bookmark";
         } catch { if (!session.disposed) button.textContent = "Bookmark retry"; }
-    });
+    };
+    button._hydrateBookmark = hydrate;
+    if (workId !== undefined) button.disabled = !id; else button.disabled = true;
     button.addEventListener("click", async () => {
-        if (busy || session.disposed) return;
+        if (busy || session.disposed || !id) return;
         busy = true; button.disabled = true;
         const previous = active; active = !active;
         button.setAttribute("aria-pressed", String(active));
@@ -270,7 +269,7 @@ function createVirtualReader(wrapper, manifest, session) {
 
         img.onload = () => {
             if (session.disposed || page.image !== img) return;
-            if (page.index === 0 && !session.firstPageUsable) { session.firstPageUsable = true; session.onFirstPageUsable?.(); }
+            if (page.index === 0 && !session.firstPageUsable) { session.firstPageUsable = true; performanceMark("First page usable"); session.onFirstPageUsable?.(); }
             adjustKnownRatio(page, img);
             page.element.classList.add("reader-page-loaded");
             page.element.classList.remove("reader-page-error");
@@ -454,6 +453,7 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
     document.body.classList.add("reader-active");
     saveReaderState({ source, work, chapter });
 
+    performanceMark("Shell rendered");
     const shell = document.createElement("div");
     shell.className = "reader-pages reader-loading-shell";
     const loading = document.createElement("div");
@@ -462,6 +462,9 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
     shell.appendChild(loading);
     ensureReaderBlockLayout(root).content.replaceChildren(shell);
 
+    performanceMark("Manifest requested");
+    const workPromise = loadWork(work);
+    performanceMark("Metadata requested");
     let manifest;
     try {
         manifest = await fetchWithRetry(manifestUrl, {}, {
@@ -477,16 +480,14 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
 
     if (session.disposed || generation !== renderGeneration) return;
     manifest = resolveManifest(manifest, source, work, chapter);
-    const workPromise = loadWork(work);
+    performanceMark("Manifest resolved");
     const wrapper = document.createElement("div");
     wrapper.className = "reader-pages";
 
     const { homeBar: readerBar, searchMount } = buildReaderTopBar(source, work, chapter, [chapter]);
+    const bookmarkButton = createBookmarkControl(session, undefined);
+    readerBar.querySelector(".reader-bar-right")?.appendChild(bookmarkButton);
     wrapper.appendChild(readerBar);
-    Search.start({ mount: searchMount, context: "reader" }).then(cleanup => {
-        if (!cleanup) return;
-        if (session.disposed) cleanup(); else session.cleanups.push(cleanup);
-    }).catch(error => console.warn("Reader search failed", error));
     installReaderChromeAutohide(readerBar, session);
 
     const anchor = document.createElement("div");
@@ -494,6 +495,7 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
     wrapper.appendChild(anchor);
 
     createVirtualReader(wrapper, manifest, session);
+    performanceMark("First image assigned");
 
     const bottomMount = document.createElement("div");
     wrapper.appendChild(bottomMount);
@@ -504,9 +506,19 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
         if (session.disposed || generation !== renderGeneration) return;
         const chapters = workManifest?.chapters || [chapter];
         bottomMount.replaceChildren(buildReaderNavBar(source, work, chapter, chapters, { className: "reader-bottom-bar", search: false }).homeBar);
-        readerBar.querySelector(".reader-bar-right")?.appendChild(createBookmarkControl(session, workManifest?.parent_work_id));
+        const hydratedTop = buildReaderTopBar(source, work, chapter, chapters);
+        const oldImg = wrapper.querySelector(".reader-page-image");
+        readerBar.querySelector(".reader-bar-middle")?.replaceWith(hydratedTop.homeBar.querySelector(".reader-bar-middle"));
+        performanceMark("Metadata resolved");
+        performanceMark("Navigation hydrated");
+        bookmarkButton._hydrateBookmark?.(workManifest?.parent_work_id).then(() => performanceMark("Bookmark hydrated"));
+        Search.start({ mount: searchMount, context: "reader" }).then(cleanup => {
+            performanceMark("Search started");
+            if (!cleanup) return;
+            if (session.disposed) cleanup(); else session.cleanups.push(cleanup);
+        }).catch(error => console.warn("Reader search failed", error));
         const parentWorkId = workManifest?.parent_work_id;
-        if (parentWorkId !== undefined && parentWorkId !== null) session.cleanups.push(mountDiscussion(wrapper, String(parentWorkId)));
+        if (parentWorkId !== undefined && parentWorkId !== null) { session.cleanups.push(mountDiscussion(wrapper, String(parentWorkId))); performanceMark("Comments mounted"); }
     }).catch(error => console.warn("Reader metadata failed", error));
     const startRails = () => {
         if (session.disposed || session.railStarted) return;
@@ -516,6 +528,7 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
             if (session.disposed) { cleanup?.(); return; }
             if (cleanup) session.cleanups.push(cleanup);
             layoutParts.layout.classList.add("reader-rails-ready");
+            performanceMark("Rails started");
         }).catch(error => console.warn("Reader blocks failed", error));
     };
     session.onFirstPageUsable = startRails;
@@ -537,6 +550,7 @@ if (import.meta.env.DEV) {
 }
 
 export class Reader {
+    static dispose() { currentReader?.dispose(); currentReader = null; }
     static async start(work, chapter) {
         const container = document.getElementById("reader-container");
 
@@ -591,7 +605,6 @@ window.addEventListener("open-reader", async (e) => {
     try {
         navigate(`/?source=${encodeURIComponent(source)}&work=${encodeURIComponent(work)}&chapter=${encodeURIComponent(chapter)}`, { replace: false });
         return;
-        await renderManifestInto(root, manifestUrl, source, work, chapter);
     } catch (err) {
         console.error("Reader failed:", err);
 

@@ -34,7 +34,7 @@ export const TagPreferences = {
     })().finally(() => { inflight = null; });
     return inflight;
   },
-  async save({ personalExcluded, allowedDefaults }) {
+  async save({ personalExcluded = snapshot.personalExcluded, allowedDefaults = snapshot.allowedDefaults }) {
     const s = await session();
     if (!s?.user?.id) throw new Error("Sign in before saving preferences.");
     const db = await getSupabase();

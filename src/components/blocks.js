@@ -119,7 +119,17 @@ async function renderBlock(target, rawItem) {
             iframe.loading = "lazy";
             if (item.width) iframe.width = item.width;
             if (item.height) iframe.height = item.height;
-            element.appendChild(iframe);
+            const wrap = document.createElement("div");
+            wrap.className = "block-iframe-wrap";
+            const cover = document.createElement("div");
+            cover.className = "block-iframe-cover";
+            cover.textContent = "Loading…";
+            const done = () => { cover.classList.add("is-loaded"); cover.textContent = ""; cover.style.pointerEvents = "none"; };
+            iframe.addEventListener("load", done, { once: true });
+            iframe.addEventListener("error", () => { cover.textContent = ""; }, { once: true });
+            setTimeout(done, 5000);
+            wrap.append(iframe, cover);
+            element.appendChild(wrap);
             target.appendChild(element);
         } else if (item.title || item.body || item.text || item.content) {
             target.appendChild(textBlock(item));
@@ -169,6 +179,20 @@ function itemsForPlacement(config, placement) {
     return raw.slice().sort((a, b) => (normalizeBlock(a)?.order ?? 0) - (normalizeBlock(b)?.order ?? 0));
 }
 
+function rememberNodeState(node) {
+    return {
+        style: node.getAttribute("style"),
+        ariaHidden: node.getAttribute("aria-hidden"),
+        inert: node.hasAttribute("inert"),
+        tabindex: node.getAttribute("tabindex")
+    };
+}
+function restoreNodeState(node, state) {
+    if (state.style === null) node.removeAttribute("style"); else node.setAttribute("style", state.style);
+    if (state.ariaHidden === null) node.removeAttribute("aria-hidden"); else node.setAttribute("aria-hidden", state.ariaHidden);
+    if (state.inert) node.setAttribute("inert", ""); else node.removeAttribute("inert");
+    if (state.tabindex === null) node.removeAttribute("tabindex"); else node.setAttribute("tabindex", state.tabindex);
+}
 function createFiniteRailSession(containers) {
     const rails = [containers.left, containers.right].filter(Boolean);
     let frame = null;
@@ -177,29 +201,40 @@ function createFiniteRailSession(containers) {
         target.querySelectorAll('[data-rail-clone="true"]').forEach(clone => clone.remove());
         target.classList.add("finite-reader-rail");
         const blocks = [...target.children];
+        const original = new Map();
         blocks.forEach((child, index) => {
+            original.set(child, { self: rememberNodeState(child), focusables: [...child.querySelectorAll("a,button,input,select,textarea,iframe,[tabindex]")].map(node => [node, rememberNodeState(node)]) });
             child.dataset.railIndex = String(index);
             child.style.position = "absolute";
             child.style.left = "0";
             child.style.right = "0";
             child.style.background = "#000000";
+            child.style.transition = "none";
         });
-        return { target, blocks, activeStart: 0, visibleSlots: 0, slotHeight: 1, cycleCount: 0, iframeSrcs: [...target.querySelectorAll("iframe")].map(iframe => iframe.src) };
+        return { target, blocks, original, activeStart: -1, visibleSlots: 0, heights: [], offsets: [], cycleCount: 0, iframeIds: [...target.querySelectorAll("iframe")], iframeSrcs: [...target.querySelectorAll("iframe")].map(iframe => iframe.src) };
     });
     const measure = () => {
         for (const state of states) {
-            const first = state.blocks[0];
-            const rect = first?.getBoundingClientRect?.();
             const gap = Number.parseFloat(getComputedStyle(state.target).rowGap || getComputedStyle(state.target).gap || "0") || 0;
-            state.slotHeight = Math.max(1, (rect?.height || 260) + gap);
-            const height = state.target.closest(".reader-block-side")?.getBoundingClientRect?.().height || window.innerHeight;
-            state.visibleSlots = Math.min(state.blocks.length, Math.max(1, Math.floor(height / state.slotHeight)));
+            state.heights = state.blocks.map(block => Math.max(1, block.getBoundingClientRect?.().height || 260));
+            state.offsets = [];
+            let total = 0;
+            for (const h of state.heights) { state.offsets.push(total); total += h + gap; }
+            const side = state.target.closest(".reader-block-side");
+            const layout = state.target.closest(".reader-block-layout");
+            const contentHeight = layout?.getBoundingClientRect?.().height || document.documentElement.scrollHeight;
+            const height = Math.min(window.innerHeight, side?.getBoundingClientRect?.().height || window.innerHeight);
+            let used = 0, slots = 0;
+            for (const h of state.heights) { if (slots && used + h > height) break; used += h + gap; slots += 1; }
+            state.visibleSlots = Math.min(state.blocks.length, Math.max(1, slots));
             state.target.style.position = "sticky";
             state.target.style.top = "0";
+            state.target.style.height = `${height}px`;
             state.target.style.minHeight = `${height}px`;
             state.target.style.background = "#000000";
+            if (side) side.style.minHeight = `${Math.max(contentHeight, document.documentElement.scrollHeight)}px`;
         }
-        update();
+        schedule();
     };
     const update = () => {
         frame = null;
@@ -207,29 +242,31 @@ function createFiniteRailSession(containers) {
         for (const state of states) {
             const count = state.blocks.length;
             if (!count) continue;
-            const nextStart = Math.floor(window.scrollY / Math.max(480, state.slotHeight * 1.5)) % count;
-            if (nextStart < state.activeStart) state.cycleCount += 1;
+            const cyclePx = Math.max(480, (state.heights[0] || 260) * 1.5);
+            const nextStart = ((Math.floor(window.scrollY / cyclePx) % count) + count) % count;
+            if (state.activeStart !== -1 && nextStart < state.activeStart) state.cycleCount += 1;
             state.activeStart = nextStart;
-            const visible = new Set();
-            for (let slot = 0; slot < state.visibleSlots; slot += 1) visible.add((state.activeStart + slot) % count);
+            const visibleOrder = Array.from({ length: state.visibleSlots }, (_, slot) => (nextStart + slot) % count);
             for (let index = 0; index < count; index += 1) {
                 const child = state.blocks[index];
-                const slot = [...visible].indexOf(index);
+                const slot = visibleOrder.indexOf(index);
                 const active = slot !== -1;
-                child.style.transform = active ? `translateY(${slot * state.slotHeight}px)` : "translateY(-200vh)";
+                child.style.transform = active ? `translateY(${state.offsets[slot] || 0}px)` : "translateY(-200vh)";
                 child.style.opacity = active ? "1" : "0";
                 child.style.pointerEvents = active ? "auto" : "none";
-                child.setAttribute("aria-hidden", active ? "false" : "true");
-                child.querySelectorAll("a,button,input,select,textarea,iframe").forEach(node => active ? node.removeAttribute("tabindex") : node.setAttribute("tabindex", "-1"));
+                if (active) { const saved = state.original.get(child).self; if (saved.ariaHidden === null) child.removeAttribute("aria-hidden"); else child.setAttribute("aria-hidden", saved.ariaHidden); if (saved.inert) child.setAttribute("inert", ""); else child.removeAttribute("inert"); } else child.setAttribute("aria-hidden", "true");
+                state.original.get(child).focusables.forEach(([node, saved]) => active ? restoreNodeState(node, saved) : node.setAttribute("tabindex", "-1"));
             }
             if (import.meta.env.DEV) state.target.__railDiagnostics = {
                 configuredBlockCount: count,
                 visibleSlotCount: state.visibleSlots,
-                liveDomNodeCount: state.target.querySelectorAll("*").length,
+                liveDomNodeCount: state.blocks.length,
                 liveIframeCount: state.target.querySelectorAll("iframe").length,
                 activeStartIndex: state.activeStart,
                 cycleCount: state.cycleCount,
-                iframeSrcList: [...state.target.querySelectorAll("iframe")].map(iframe => iframe.src)
+                iframeElementIdentities: state.iframeIds,
+                currentIframeSrcList: [...state.target.querySelectorAll("iframe")].map(iframe => iframe.src),
+                disposed
             };
         }
     };
@@ -237,13 +274,15 @@ function createFiniteRailSession(containers) {
     const resize = new ResizeObserver(measure);
     rails.forEach(rail => resize.observe(rail));
     window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", measure, { passive: true });
     frame = requestAnimationFrame(measure);
     return () => {
         disposed = true;
         if (frame !== null) cancelAnimationFrame(frame);
         resize.disconnect();
         window.removeEventListener("scroll", schedule);
-        states.forEach(state => { state.target.classList.remove("finite-reader-rail"); state.blocks.forEach(child => { child.removeAttribute("style"); child.removeAttribute("aria-hidden"); }); });
+        window.removeEventListener("resize", measure);
+        states.forEach(state => { state.target.classList.remove("finite-reader-rail"); state.target.removeAttribute("style"); state.target.closest(".reader-block-side")?.style.removeProperty("min-height"); state.blocks.forEach(child => { restoreNodeState(child, state.original.get(child).self); state.original.get(child).focusables.forEach(([node, saved]) => restoreNodeState(node, saved)); }); });
     };
 }
 

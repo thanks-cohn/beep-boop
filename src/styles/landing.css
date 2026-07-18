@@ -275,3 +275,19 @@ html, body, #app, #layout, #reader-column, #reader-container, .app-root, .reader
 .reader-block-layout.reader-rails-ready .reader-block-side{opacity:1;transition:opacity 180ms ease;background:#000000}
 .iframe-block,.embed-block,.site-block iframe{background:#000000!important;border:0!important}
 html,body,#app{background:#000000!important;overscroll-behavior:none}
+
+/* Stabilization foundations: controllable application surfaces are pure black. */
+:root{--bg:#000000;--panel:#000000;--panel-2:#000000}
+html,body,.app-root,.account-root,.reader-pages,.reader-loading-shell,.reader-page,.reader-page-placeholder,.reader-block-layout,.reader-block-side,.reader-content-area,.site-block,.blocks-side-rail,.block-iframe-wrap,.embed-block,.iframe-block{background:#000000!important;background-image:none!important}
+.reader-block-layout{align-items:stretch;overflow:visible;contain:none;min-height:100vh}
+.reader-block-side{position:relative;align-self:stretch;background:#000000!important;overflow:visible;contain:none;transform:none}
+.finite-reader-rail{overflow:hidden;background:#000000!important;contain:layout;transition:none!important;will-change:auto}
+.reader-block-layout:not(.reader-rails-ready) .reader-block-side{opacity:0;background:#000000!important}
+.reader-block-layout.reader-rails-ready .reader-block-side{opacity:1;background:#000000!important;transition:opacity 180ms ease}
+.reader-block-layout.reader-rails-ready.rails-entered .reader-block-side{transition:none!important}
+.finite-reader-rail>*{transition:none!important;background:#000000!important}
+.block-iframe-wrap{position:relative;display:block;background:#000000!important;overflow:hidden;min-height:18rem}
+.block-iframe-wrap iframe,.block-iframe{display:block;width:100%;min-height:18rem;border:0;background:#000000!important;color-scheme:dark}
+.block-iframe-cover{position:absolute;inset:0;display:grid;place-items:center;background:#000000;color:#999;z-index:2;pointer-events:auto;opacity:1;transition:opacity 160ms ease}
+.block-iframe-cover.is-loaded{opacity:0;pointer-events:none}
+@media (prefers-reduced-motion: reduce){.reader-block-layout.reader-rails-ready .reader-block-side,.block-iframe-cover{transition:none!important}}

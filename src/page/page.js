@@ -2,8 +2,7 @@ import { Landing } from "./landing.js";
 import { Reader } from "./reader.js";
 import { Account } from "../account.js";
 
-let routeCleanup = null;
-function disposeRoute() { routeCleanup?.(); routeCleanup = null; Account.dispose?.(); }
+function disposeRoute() { Account.dispose?.(); Reader.dispose?.(); Landing.dispose?.(); }
 
 export class Page {
 
