@@ -15,8 +15,6 @@ export class Footer {
         links.setAttribute("aria-label", "Footer links");
         links.innerHTML = `
             <a href="/">Home</a>
-            <a href="/docs/reasons.md">Reasons</a>
-            <a href="/docs/ingestion.md">Ingestion notes</a>
         `;
 
         const note = document.createElement("p");

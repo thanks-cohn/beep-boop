@@ -1,4 +1,5 @@
 import "../styles/discussion.css";
+import { withRetry } from "../utils/retry.js";
 import { isDiscussionConfigured } from "./supabase.js";
 import { appendPlainTextWithLinks } from "./text.js";
 
@@ -11,6 +12,7 @@ const el = (tag, className, text) => {
 const draftKey = workId => `doku-doujin:discussion-draft:${workId}`;
 
 export function mountDiscussion(parent, workId) {
+    parent.querySelector(`.discussion-shell[data-work-id="${CSS.escape(String(workId))}"]`)?.remove();
     const section = el("section", "discussion-shell");
     section.setAttribute("aria-labelledby", `discussion-heading-${workId}`);
     section.dataset.workId = String(workId);
@@ -26,33 +28,42 @@ export function mountDiscussion(parent, workId) {
     status.setAttribute("role", "status"); status.setAttribute("aria-live", "polite");
     section.append(status); parent.append(section);
 
-    let disposed = false, loaded = false, cursor = null, service, comments = [], userSession = null;
-    let observer;
+    let disposed = false, loaded = false, cursor = null, service, comments = [], userSession = null, body = null;
+    let observer, refreshController = null, refreshGeneration = 0;
     const cleanups = [];
-    const listen = (node, event, fn) => { node.addEventListener(event, fn); cleanups.push(() => node.removeEventListener(event, fn)); };
+    const listen = (node, event, fn, options) => { node.addEventListener(event, fn, options); cleanups.push(() => node.removeEventListener(event, fn, options)); };
     const setStatus = (message, error = false) => { status.textContent = message; status.classList.toggle("is-error", error); };
+    const retryOptions = { retries: 3, initialDelay: 450, maxDelay: 3500, onRetry: ({ attempt }) => setStatus(`Restoring discussion… attempt ${attempt}.`) };
 
     async function init() {
         if (loaded || disposed) return;
         loaded = true;
         if (!isDiscussionConfigured()) { setStatus("Discussion is currently unavailable."); bookmark.disabled = true; return; }
-        setStatus(navigator.onLine ? "Loading discussion…" : "You appear to be offline. Retry when connected.", !navigator.onLine);
+        setStatus(navigator.onLine ? "Loading discussion…" : "You appear to be offline. Discussion will retry when connected.", !navigator.onLine);
         try {
             service = await import("./service.js");
             const auth = await import("./supabase.js");
             userSession = await auth.session();
             renderAccount(auth);
-            await Promise.all([refresh(), updateBookmark()]);
-        } catch (error) { if (!disposed) setStatus(error.message || "Unable to load discussion. Retry.", true); }
+            await Promise.all([refresh(), updateBookmark().catch(error => console.warn("Bookmark unavailable", error))]);
+        } catch (error) { recoverDiscussion(error); }
+    }
+
+    function recoverDiscussion(error) {
+        if (disposed) return;
+        console.warn("Discussion recovered from failure.", error);
+        setStatus(error?.message || "Discussion is having trouble. Your reading session is safe.", true);
+        if (!body) renderList();
     }
 
     function renderAccount(auth) {
+        section.querySelector(".discussion-account")?.remove();
         const bar = el("div", "discussion-account");
         const label = el("span", "", userSession ? (userSession.user.is_anonymous ? "Anonymous session" : "Signed in") : "Not signed in");
         const google = el("button", "discussion-button", userSession?.user?.is_anonymous ? "Link Google account" : "Continue with Google"); google.type = "button";
         listen(google, "click", async () => { sessionStorage.setItem(draftKey(workId), section.querySelector("textarea")?.value || ""); try { await auth.continueWithGoogle(); } catch (e) { setStatus(e.message, true); } });
         bar.append(label, google);
-        if (userSession) { const signout = el("button", "discussion-button", "Sign out"); signout.type = "button"; listen(signout, "click", async () => { const db = await auth.getSupabase(); await db.auth.signOut(); userSession = null; section.querySelector(".discussion-account")?.remove(); renderAccount(auth); }); bar.append(signout); }
+        if (userSession) { const signout = el("button", "discussion-button", "Sign out"); signout.type = "button"; listen(signout, "click", async () => { const db = await auth.getSupabase(); await db.auth.signOut(); userSession = null; renderAccount(auth); }); bar.append(signout); }
         head.after(bar);
     }
 
@@ -63,23 +74,27 @@ export function mountDiscussion(parent, workId) {
     listen(bookmark, "click", async () => { bookmark.disabled = true; try { const active = bookmark.getAttribute("aria-pressed") === "true"; const next = await service.toggleBookmark(workId, active); bookmark.setAttribute("aria-pressed", String(next)); bookmark.textContent = next ? "Bookmarked" : "Bookmark"; } catch (e) { setStatus(e.message, true); } finally { bookmark.disabled = false; } });
 
     async function refresh(older = false) {
-        const generationWork = section.dataset.workId;
-        const result = await service.loadDiscussion(workId, older ? cursor : null);
-        if (disposed || generationWork !== String(workId)) return;
-        comments = older ? [...comments, ...result.comments] : result.comments;
+        if (!service || disposed) return;
+        refreshController?.abort();
+        const controller = new AbortController(); refreshController = controller;
+        const generation = ++refreshGeneration;
+        const result = await withRetry(() => service.loadDiscussion(workId, older ? cursor : null), { ...retryOptions, signal: controller.signal });
+        if (disposed || generation !== refreshGeneration || section.dataset.workId !== String(workId)) return;
+        const seen = new Set(older ? comments.map(comment => comment.id) : []);
+        comments = older ? [...comments, ...result.comments.filter(comment => !seen.has(comment.id))] : result.comments;
         cursor = result.nextCursor;
         renderList(); setStatus(comments.length ? (cursor ? "Discussion loaded." : "End of discussion.") : "No comments yet. Start the discussion.");
     }
 
     function renderList() {
-        section.querySelector(".discussion-body")?.remove();
-        const body = el("div", "discussion-body"); body.append(makeComposer());
+        body?.remove();
+        body = el("div", "discussion-body"); body.append(makeComposer());
         const list = el("ol", "discussion-list");
         for (const comment of comments) list.append(renderComment(comment));
         body.append(list);
         const more = el("button", "discussion-button discussion-more", cursor ? "Load older comments" : "End of discussion"); more.type = "button"; more.disabled = !cursor;
-        listen(more, "click", () => refresh(true).catch(e => setStatus(e.message, true)));
-        const retry = el("button", "discussion-button", "Refresh"); retry.type = "button"; listen(retry, "click", () => refresh().catch(e => setStatus(e.message, true)));
+        listen(more, "click", () => refresh(true).catch(recoverDiscussion));
+        const retry = el("button", "discussion-button", "Retry discussion"); retry.type = "button"; listen(retry, "click", () => refresh().catch(recoverDiscussion));
         body.append(more, retry); section.append(body);
     }
 
@@ -92,9 +107,10 @@ export function mountDiscussion(parent, workId) {
         const account = el("option", "", "Post as my account"); account.value = "account"; const anonymous = el("option", "", "Post anonymously"); anonymous.value = "anonymous";
         if (!userSession || userSession.user.is_anonymous) mode.append(anonymous); else mode.append(account, anonymous);
         const submit = el("button", "discussion-button discussion-primary", existing ? "Save" : "Post"); submit.type = "submit";
+        let submitting = false;
         listen(textarea, "input", () => { counter.textContent = `${textarea.value.length} / 2000`; if (!parentId) sessionStorage.setItem(draftKey(workId), textarea.value); });
         listen(textarea, "keydown", event => { if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) form.requestSubmit(); });
-        listen(form, "submit", async event => { event.preventDefault(); const value = textarea.value.trim(); if (!value) { setStatus("Comment cannot be empty.", true); return; } submit.disabled = true; try { if (existing) await service.editComment(existing.id, value); else await service.createComment(workId, value, mode.value, parentId); sessionStorage.removeItem(draftKey(workId)); await refresh(); setStatus(existing ? "Comment updated." : "Comment posted."); } catch (e) { setStatus(e.message, true); } finally { submit.disabled = false; } });
+        listen(form, "submit", async event => { event.preventDefault(); if (submitting) return; const value = textarea.value.trim(); if (!value) { setStatus("Comment cannot be empty.", true); return; } submitting = true; submit.disabled = true; try { if (existing) await service.editComment(existing.id, value); else await service.createComment(workId, value, mode.value, parentId); sessionStorage.removeItem(draftKey(workId)); await refresh(); setStatus(existing ? "Comment updated." : "Comment posted."); } catch (e) { setStatus(e.message, true); } finally { submitting = false; submit.disabled = false; } });
         form.append(label, counter, mode, submit); return form;
     }
 
@@ -110,10 +126,10 @@ export function mountDiscussion(parent, workId) {
         if (!comment.deleted_at) {
             const actions = el("div", "discussion-actions");
             const action = (text, fn) => { const b = el("button", "discussion-action", text); b.type = "button"; listen(b, "click", fn); actions.append(b); };
-            action(`Vote ${comment.score ?? 0}`, () => service.voteComment(comment.id).then(refresh).catch(e => setStatus(e.message, true)));
-            if (!comment.parent_id) action("Reply", () => { const composer = makeComposer(comment.id); item.append(composer); composer.querySelector("textarea").focus(); });
-            action("Report", () => { const reason = window.prompt("Report reason: spam, harassment, or other"); if (reason) service.reportComment(comment.id, reason).then(() => setStatus("Report received.")).catch(e => setStatus(e.message, true)); });
-            if (comment.is_author) { action("Edit", () => { const composer = makeComposer(null, comment); item.append(composer); composer.querySelector("textarea").focus(); }); action("Delete", () => service.deleteComment(comment.id).then(refresh).catch(e => setStatus(e.message, true))); }
+            action(`Vote ${comment.score ?? 0}`, () => service.voteComment(comment.id).then(refresh).catch(recoverDiscussion));
+            if (!comment.parent_id) action("Reply", () => { item.querySelector(":scope > .discussion-composer")?.remove(); const composer = makeComposer(comment.id); item.append(composer); composer.querySelector("textarea").focus(); });
+            action("Report", () => { const reason = window.prompt("Report reason: spam, harassment, or other"); if (reason) service.reportComment(comment.id, reason).then(() => setStatus("Report received.")).catch(recoverDiscussion); });
+            if (comment.is_author) { action("Edit", () => { item.querySelector(":scope > .discussion-composer")?.remove(); const composer = makeComposer(null, comment); item.append(composer); composer.querySelector("textarea").focus(); }); action("Delete", () => service.deleteComment(comment.id).then(refresh).catch(recoverDiscussion)); }
             article.append(actions);
         }
         item.append(article);
@@ -121,7 +137,8 @@ export function mountDiscussion(parent, workId) {
         return item;
     }
 
+    listen(window, "online", () => { if (loaded) refresh().catch(recoverDiscussion); }, { passive: true });
     if ("IntersectionObserver" in window) { observer = new IntersectionObserver(entries => { if (entries.some(e => e.isIntersecting)) { observer.disconnect(); init(); } }, { rootMargin: "700px 0px" }); observer.observe(section); }
     else init();
-    return () => { disposed = true; observer?.disconnect(); cleanups.splice(0).forEach(fn => fn()); section.remove(); };
+    return () => { disposed = true; refreshController?.abort(); observer?.disconnect(); cleanups.splice(0).forEach(fn => fn()); section.remove(); };
 }

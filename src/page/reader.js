@@ -5,6 +5,7 @@ import { loadWork } from "../storage/work_manifest.js";
 import { Blocks } from "../components/blocks.js";
 import { Search } from "../components/search.js";
 import { mountDiscussion } from "../discussion/discussion.js";
+import { loadReaderState, restoreScrollPosition, saveReaderState } from "../recovery/state.js";
 
 // At most WINDOW_BEFORE + the active page + WINDOW_AFTER images are retained.
 // Keep these deliberately conservative for Safari's decoded-image memory budget.
@@ -395,6 +396,7 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
     const generation = ++renderGeneration;
     const session = {
         disposed: false,
+        route: { source, work, chapter },
         cleanups: [],
         diagnostics: () => null,
         dispose() {
@@ -405,6 +407,7 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
     };
     currentReader = session;
     document.body.classList.add("reader-active");
+    saveReaderState({ source, work, chapter });
 
     let manifest;
     try {
@@ -464,7 +467,9 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
 
     const scrollTimer = setTimeout(() => {
         if (session.disposed) return;
-        anchor.scrollIntoView({
+        const saved = loadReaderState();
+        if (saved?.work === work && saved?.chapter === chapter && saved.scrollY > 0) restoreScrollPosition(saved);
+        else anchor.scrollIntoView({
             behavior: "smooth",
             block: "start"
         });
@@ -504,6 +509,15 @@ export class Reader {
         }
     }
 }
+
+let readerStateTimer = null;
+window.addEventListener("scroll", () => {
+    if (!currentReader?.route || readerStateTimer !== null) return;
+    readerStateTimer = window.setTimeout(() => {
+        readerStateTimer = null;
+        if (currentReader?.route) saveReaderState(currentReader.route);
+    }, 250);
+}, { passive: true });
 
 window.addEventListener("open-reader", async (e) => {
     const entry = e.detail;
