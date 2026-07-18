@@ -4,6 +4,7 @@ import { loadWork } from "../storage/work_manifest.js";
 import { Blocks } from "../components/blocks.js";
 import { Search } from "../components/search.js";
 import { mountDiscussion } from "../discussion/discussion.js";
+import { createRetrySession, fetchJsonWithRetry, retryDelay } from "../utils/retry.js";
 
 // At most WINDOW_BEFORE + the active page + WINDOW_AFTER images are retained.
 // Keep these deliberately conservative for Safari's decoded-image memory budget.
@@ -236,6 +237,16 @@ function createVirtualReader(wrapper, manifest, session) {
             page.failed = true;
             page.element.classList.add("reader-page-error");
             page.error.hidden = false;
+            const attempt = (page.retryAttempt || 0) + 1;
+            page.retryAttempt = attempt;
+            const delay = retryDelay(attempt, { baseDelay: 600, maxDelay: 12000 });
+            page.retryTimer = setTimeout(() => {
+                session.timers.delete(page.retryTimer);
+                page.retryTimer = null;
+                if (session.disposed || !page.failed) return;
+                retry();
+            }, delay);
+            session.timers.add(page.retryTimer);
         };
         page.element.insertBefore(img, page.error);
         img.src = page.url;
@@ -265,6 +276,7 @@ function createVirtualReader(wrapper, manifest, session) {
         const page = { index, element, error, image: null, failed: false, ratio: null, url: pageUrl(index) };
         const retry = () => {
             if (session.disposed) return;
+            if (page.retryTimer) { clearTimeout(page.retryTimer); session.timers.delete(page.retryTimer); page.retryTimer = null; }
             page.failed = false;
             error.hidden = true;
             element.classList.remove("reader-page-error");
@@ -311,6 +323,7 @@ function createVirtualReader(wrapper, manifest, session) {
         intersecting.clear();
         if (scrollFrame !== null) cancelAnimationFrame(scrollFrame);
         pages.forEach(page => {
+            if (page.retryTimer) clearTimeout(page.retryTimer);
             page.error.removeEventListener("click", page.retry);
             unload(page);
         });
@@ -362,7 +375,7 @@ function ensureReaderBlockLayout(container) {
 }
 
 async function startReaderBlocks(layoutParts) {
-    await Blocks.start({
+    return Blocks.start({
         page: "reader",
         left: layoutParts.left,
         center: null,
@@ -381,10 +394,14 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
     const session = {
         disposed: false,
         cleanups: [],
+        timers: new Set(),
         diagnostics: () => null,
         dispose() {
             if (this.disposed) return;
             this.disposed = true;
+            this.timers.forEach(clearTimeout);
+            this.timers.clear();
+            this.retrySession?.cancel();
             this.cleanups.splice(0).forEach(cleanup => cleanup());
         }
     };
@@ -393,12 +410,8 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
 
     let manifest;
     try {
-        manifest = await fetch(manifestUrl).then(r => {
-            if (!r.ok) {
-                throw new Error(`Manifest failed: ${r.status}`);
-            }
-            return r.json();
-        });
+        session.retrySession = createRetrySession();
+        manifest = await fetchJsonWithRetry(manifestUrl, { session: session.retrySession, retries: 8, baseDelay: 300, maxDelay: 8000 });
     } catch (error) {
         if (session.disposed) return;
         throw error;
@@ -445,7 +458,7 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
 
     const layoutParts = ensureReaderBlockLayout(root);
     layoutParts.content.replaceChildren(wrapper);
-    startReaderBlocks(layoutParts).catch(error => console.warn("Reader blocks failed", error));
+    startReaderBlocks(layoutParts).then(cleanup => { if (cleanup) session.cleanups.push(cleanup); }).catch(error => console.warn("Reader blocks failed", error));
 
     const scrollTimer = setTimeout(() => {
         if (session.disposed) return;

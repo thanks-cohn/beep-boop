@@ -247,3 +247,17 @@ body.reader-active .site-ghost-text {
     .reader-home-bar:not(.reader-bottom-bar) .reader-home-button{width:auto}
     .reader-home-bar:not(.reader-bottom-bar) .reader-chapter-select{width:auto;max-width:clamp(9rem,24vw,20rem)}
 }
+
+/* Bounded side-rail repair: rail columns are sticky viewports inside full-height
+   page columns. The configured children and iframe nodes are mounted once; scroll
+   only changes a CSS offset after deliberate thresholds, never iframe src/object. */
+.blocks-side{position:sticky;top:5.5rem;max-height:calc(100dvh - 6rem);overflow:hidden;background:#000;border-radius:1rem}
+.blocks-column.rail-ring{overflow:hidden;background:#000;will-change:transform;transform:translate3d(0,var(--rail-cycle-offset,0px),0);transition:none;opacity:1}
+.blocks-column.rail-ring>.site-block,.blocks-column.rail-ring>*{background:#000;border-color:var(--line);flex:0 0 auto}
+.block-iframe-shell{position:relative;display:block;background:#000;overflow:hidden;min-height:inherit;border-radius:inherit}
+.block-iframe-shell iframe,.block-iframe{display:block;width:100%;border:0;background:#000;color-scheme:dark}
+.block-iframe-cover{position:absolute;inset:0;z-index:1;background:#000;pointer-events:none;opacity:1;transition:opacity .16s ease}
+.block-iframe-shell.iframe-loaded .block-iframe-cover{opacity:0;visibility:hidden}
+.reader-block-layout{align-items:stretch;min-height:100vh}.reader-block-side{position:relative;max-height:none;overflow:visible;background:#000}.reader-block-side>.blocks-column{position:sticky;top:.75rem;max-height:calc(100dvh - 1.5rem);overflow:hidden}.reader-page:not(.reader-page-loaded){background:#000}.reader-page-error{background:#000}.reader-page-retry{background:#000;color:#d8d8e6;border:1px solid var(--line);border-radius:.75rem;inset:1rem;width:calc(100% - 2rem);height:calc(100% - 2rem)}
+@media (prefers-reduced-motion:reduce){.block-iframe-cover{transition:none}.reader-home-bar{transition:none}}
+@media (max-width:900px){.blocks-side{position:static;max-height:none;overflow:visible}.blocks-column.rail-ring{transform:none!important}.reader-block-side>.blocks-column{position:static;max-height:none;overflow:visible}}

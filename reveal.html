@@ -31,7 +31,7 @@
                 if (!shell) return;
                 shell.classList.add("startup-shell-error");
                 shell.setAttribute("aria-busy", "false");
-                shell.innerHTML = "<div><strong>Unable to start Doku-Doujin.</strong><br><span>Please reload the page.</span></div>";
+                shell.innerHTML = '<div><strong>Still connecting…</strong><br><span>We will keep trying quietly. You can also try again.</span><br><button type="button" onclick="location.reload()">Try Again</button></div>';
             };
             const resourceError = event => {
                 if (event.target?.tagName === "SCRIPT") fail();
