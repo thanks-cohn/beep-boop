@@ -8,6 +8,7 @@ import { mountDiscussion } from "../discussion/discussion.js";
 import { loadReaderState, restoreScrollPosition, saveReaderState } from "../recovery/state.js";
 import { navigate } from "../navigation.js";
 import { getBookmarkState, toggleBookmark, normalizeBookmarkId } from "../bookmark-service.js";
+import { snapshotDiagnostics, diagnosticTrack, diagnosticTiming } from "../diagnostics.js";
 
 // At most WINDOW_BEFORE + the active page + WINDOW_AFTER images are retained.
 // Keep these deliberately conservative for Safari's decoded-image memory budget.
@@ -278,7 +279,7 @@ function createVirtualReader(wrapper, manifest, session) {
             if (session.disposed || page.image !== img) return;
             clearTimeout(page.retryTimer);
             unload(page);
-            if ((page.attempts || 0) < 10) {
+            if ((page.attempts || 0) < 3 && navigator.onLine !== false) {
                 page.attempts = (page.attempts || 0) + 1;
                 page.element.classList.add("reader-page-reconnecting");
                 page.retryTimer = setTimeout(() => {
@@ -376,6 +377,7 @@ function createVirtualReader(wrapper, manifest, session) {
     });
 
     session.diagnostics = () => ({
+        ...snapshotDiagnostics(),
         totalPages: manifest.pages,
         loadedImages: pages.reduce((count, page) => count + Number(Boolean(page.image)), 0),
         activePage: activePage + 1,
@@ -428,7 +430,7 @@ async function startReaderBlocks(layoutParts) {
     });
 }
 
-async function renderManifestInto(root, manifestUrl, source, work, chapter) {
+async function renderManifestInto(root, manifestUrl, source, work, chapter, routeContext = null) {
     if (!root || !manifestUrl) {
         console.warn("Reader: missing root or manifestUrl.");
         return;
@@ -439,17 +441,18 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
     const session = {
         disposed: false,
         route: { source, work, chapter },
-        cleanups: [],
+        cleanups: [diagnosticTrack("reader", `${work}:${chapter}`)],
         firstPageUsable: false,
         railStarted: false,
         diagnostics: () => null,
         dispose() {
             if (this.disposed) return;
             this.disposed = true;
-            this.cleanups.splice(0).forEach(cleanup => cleanup());
+            this.cleanups.splice(0).forEach(cleanup => cleanup?.());
         }
     };
     currentReader = session;
+    routeContext?.addCleanup?.(() => { if (currentReader === session) Reader.dispose(); });
     document.body.classList.add("reader-active");
     saveReaderState({ source, work, chapter });
 
@@ -462,6 +465,7 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
     shell.appendChild(loading);
     ensureReaderBlockLayout(root).content.replaceChildren(shell);
 
+    const manifestStart = performance.now?.() || 0;
     performanceMark("Manifest requested");
     const workPromise = loadWork(work);
     performanceMark("Metadata requested");
@@ -469,7 +473,8 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
     try {
         manifest = await fetchWithRetry(manifestUrl, {}, {
             parse: "json",
-            retries: 10,
+            retries: 3,
+            signal: routeContext?.signal,
             onRetry: () => root.dataset.readerState = "reconnecting"
         });
         delete root.dataset.readerState;
@@ -481,6 +486,7 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
     if (session.disposed || generation !== renderGeneration) return;
     manifest = resolveManifest(manifest, source, work, chapter);
     performanceMark("Manifest resolved");
+    diagnosticTiming("reader.manifest", (performance.now?.() || 0) - manifestStart);
     const wrapper = document.createElement("div");
     wrapper.className = "reader-pages";
 
@@ -551,7 +557,7 @@ if (import.meta.env.DEV) {
 
 export class Reader {
     static dispose() { currentReader?.dispose(); currentReader = null; }
-    static async start(work, chapter) {
+    static async start(work, chapter, routeContext = null) {
         const container = document.getElementById("reader-container");
 
         if (!container) return;
@@ -562,7 +568,7 @@ export class Reader {
         const manifestUrl = Storage.manifest(source, work, chapter);
 
         try {
-            await renderManifestInto(container, manifestUrl, source, work, chapter);
+            await renderManifestInto(container, manifestUrl, source, work, chapter, routeContext);
         } catch (err) {
             console.error("Reader failed:", err);
 

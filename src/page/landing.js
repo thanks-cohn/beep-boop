@@ -2,7 +2,8 @@ import { fetchWithRetry } from "../utils/retry.js";
 import { Rotunda } from "../components/rotunda.js";
 import { Search } from "../components/search.js";
 import { Blocks } from "../components/blocks.js";
-async function startHeaderTicker() {
+let landingCleanup = null;
+async function startHeaderTicker(context = {}) {
     const ticker = document.getElementById("header-ticker-track");
     if (!ticker) return;
 
@@ -31,11 +32,12 @@ async function startHeaderTicker() {
         ticker.appendChild(heroBox);
 
         let heroIndex = 0;
-        window.setInterval(() => {
+        const timer = window.setInterval(() => {
             if (!hero.length) return;
             heroIndex = (heroIndex + 1) % hero.length;
             heroBox.textContent = hero[heroIndex];
         }, 4200);
+        context.addCleanup?.(() => window.clearInterval(timer));
     } catch (error) {
         console.warn("header ticker failed", error);
         ticker.textContent = "";
@@ -51,7 +53,13 @@ async function safeStart(name, fn) {
 }
 
 export class Landing {
-    static async start() {
+    static dispose() { landingCleanup?.(); landingCleanup = null; Rotunda.cleanup?.(); }
+    static async start(context = {}) {
+        Landing.dispose();
+        const cleanups = [];
+        const addCleanup = fn => { if (typeof fn === "function") cleanups.push(fn); };
+        landingCleanup = () => { while (cleanups.length) cleanups.shift()?.(); };
+        const childContext = { ...context, addCleanup: fn => { addCleanup(fn); context.addCleanup?.(fn); } };
         const container = document.getElementById("reader-container");
         if (!container) return;
 
@@ -79,11 +87,10 @@ export class Landing {
         </div>
         `;
 
-        await Promise.all([
-            safeStart("search", Search.start),
-            safeStart("rotunda", Rotunda.start),
-            safeStart("blocks", Blocks.start),
-            safeStart("header ticker", startHeaderTicker)
-        ]);
+        const searchCleanup = await Search.start({ mount: container.querySelector(".landing-search"), context: "landing" }).catch(e => console.warn("search failed", e));
+        addCleanup(searchCleanup);
+        safeStart("rotunda", () => Rotunda.start(childContext)).then(addCleanup);
+        safeStart("blocks", () => Blocks.start()).then(addCleanup);
+        safeStart("header ticker", () => startHeaderTicker(childContext));
     }
 }
