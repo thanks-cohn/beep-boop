@@ -33,13 +33,21 @@ export async function ensureAnonymousSession() {
     return data.session;
 }
 
+function oauthRedirectTo() {
+    const canonical = import.meta.env.VITE_CANONICAL_ORIGIN || "https://manga-anime.online";
+    const origin = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+        ? window.location.origin
+        : canonical;
+    return `${origin.replace(/\/$/, "")}/?account=profile&auth=callback`;
+}
+
 export async function continueWithGoogle() {
     const client = await getSupabase();
     if (!client) throw new Error("Discussion is not configured.");
     const existing = await session();
     const options = {
         provider: "google",
-        options: { scopes: "openid email profile", redirectTo: window.location.href }
+        options: { scopes: "openid email profile", redirectTo: oauthRedirectTo() }
     };
     const result = existing?.user?.is_anonymous
         ? await client.auth.linkIdentity(options)

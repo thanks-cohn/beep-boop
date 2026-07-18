@@ -4,8 +4,9 @@ import { Footer } from "./components/footer.js";
 import { startGhostText } from "./effects/ghost_text.js";
 import { withRetry } from "./utils/retry.js";
 import { loadReaderState } from "./recovery/state.js";
-import { Account } from "./account.js";
 import { TagPreferences } from "./preferences.js";
+import { installNavigation, setRouteResolver } from "./navigation.js";
+import { AuthState } from "./auth-state.js";
 
 let appRecoveryVisible = false;
 
@@ -82,8 +83,8 @@ window.addEventListener("online", () => {
     delete document.documentElement.dataset.network;
 }, { passive: true });
 
-window.addEventListener("popstate", () => {
-    if (window.location.pathname.startsWith("/account")) Account.render().catch(showAppRecovery);
-});
+setRouteResolver(() => Page.start().catch(showAppRecovery));
+installNavigation();
+AuthState.start().catch(error => console.warn("Auth state unavailable.", error));
 TagPreferences.loadForCurrentUser().catch(error => console.warn("Tag preferences unavailable.", error));
 boot().catch(showAppRecovery);

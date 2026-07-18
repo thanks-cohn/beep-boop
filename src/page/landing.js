@@ -62,6 +62,7 @@ export class Landing {
             <header class="landing-header" aria-label="Doku-Doujin site header">
                 <a class="landing-brand" href="/" aria-label="Doku-Doujin home">Doku-Doujin</a>
                 <div class="landing-search" aria-label="Site search"></div>
+                <a class="account-entry" href="/?account=profile">Account</a>
             </header>
 
             <section class="rotunda-layer">
