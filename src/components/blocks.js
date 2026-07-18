@@ -169,34 +169,86 @@ function itemsForPlacement(config, placement) {
     return raw.slice().sort((a, b) => (normalizeBlock(a)?.order ?? 0) - (normalizeBlock(b)?.order ?? 0));
 }
 
-function cycleReaderRail(target) {
-    if (!target?.closest?.(".reader-block-layout")) return;
-    const originals = [...target.children].filter(child => child.dataset.railClone !== "true");
-    target.querySelectorAll('[data-rail-clone="true"]').forEach(clone => clone.remove());
-    if (!originals.length) return;
-
-    const layout = target.closest(".reader-block-layout");
-    const neededHeight = Math.max(layout?.scrollHeight || 0, document.documentElement.scrollHeight || 0);
-    const cycleHeight = Math.max(1, originals.reduce((sum, child) => sum + child.getBoundingClientRect().height, 0));
-    const repeatCount = Math.min(40, Math.max(0, Math.ceil(neededHeight / cycleHeight) + 1));
-
-    const fragment = document.createDocumentFragment();
-    for (let repeat = 1; repeat < repeatCount; repeat += 1) {
-        for (const original of originals) {
-            const clone = original.cloneNode(true);
-            clone.dataset.railClone = "true";
-            clone.setAttribute("aria-hidden", "true");
-            fragment.appendChild(clone);
+function createFiniteRailSession(containers) {
+    const rails = [containers.left, containers.right].filter(Boolean);
+    let frame = null;
+    let disposed = false;
+    const states = rails.map(target => {
+        target.querySelectorAll('[data-rail-clone="true"]').forEach(clone => clone.remove());
+        target.classList.add("finite-reader-rail");
+        const blocks = [...target.children];
+        blocks.forEach((child, index) => {
+            child.dataset.railIndex = String(index);
+            child.style.position = "absolute";
+            child.style.left = "0";
+            child.style.right = "0";
+            child.style.background = "#000000";
+        });
+        return { target, blocks, activeStart: 0, visibleSlots: 0, slotHeight: 1, cycleCount: 0, iframeSrcs: [...target.querySelectorAll("iframe")].map(iframe => iframe.src) };
+    });
+    const measure = () => {
+        for (const state of states) {
+            const first = state.blocks[0];
+            const rect = first?.getBoundingClientRect?.();
+            const gap = Number.parseFloat(getComputedStyle(state.target).rowGap || getComputedStyle(state.target).gap || "0") || 0;
+            state.slotHeight = Math.max(1, (rect?.height || 260) + gap);
+            const height = state.target.closest(".reader-block-side")?.getBoundingClientRect?.().height || window.innerHeight;
+            state.visibleSlots = Math.min(state.blocks.length, Math.max(1, Math.floor(height / state.slotHeight)));
+            state.target.style.position = "sticky";
+            state.target.style.top = "0";
+            state.target.style.minHeight = `${height}px`;
+            state.target.style.background = "#000000";
         }
-    }
-    target.appendChild(fragment);
+        update();
+    };
+    const update = () => {
+        frame = null;
+        if (disposed) return;
+        for (const state of states) {
+            const count = state.blocks.length;
+            if (!count) continue;
+            const nextStart = Math.floor(window.scrollY / Math.max(480, state.slotHeight * 1.5)) % count;
+            if (nextStart < state.activeStart) state.cycleCount += 1;
+            state.activeStart = nextStart;
+            const visible = new Set();
+            for (let slot = 0; slot < state.visibleSlots; slot += 1) visible.add((state.activeStart + slot) % count);
+            for (let index = 0; index < count; index += 1) {
+                const child = state.blocks[index];
+                const slot = [...visible].indexOf(index);
+                const active = slot !== -1;
+                child.style.transform = active ? `translateY(${slot * state.slotHeight}px)` : "translateY(-200vh)";
+                child.style.opacity = active ? "1" : "0";
+                child.style.pointerEvents = active ? "auto" : "none";
+                child.setAttribute("aria-hidden", active ? "false" : "true");
+                child.querySelectorAll("a,button,input,select,textarea,iframe").forEach(node => active ? node.removeAttribute("tabindex") : node.setAttribute("tabindex", "-1"));
+            }
+            if (import.meta.env.DEV) state.target.__railDiagnostics = {
+                configuredBlockCount: count,
+                visibleSlotCount: state.visibleSlots,
+                liveDomNodeCount: state.target.querySelectorAll("*").length,
+                liveIframeCount: state.target.querySelectorAll("iframe").length,
+                activeStartIndex: state.activeStart,
+                cycleCount: state.cycleCount,
+                iframeSrcList: [...state.target.querySelectorAll("iframe")].map(iframe => iframe.src)
+            };
+        }
+    };
+    const schedule = () => { if (frame === null) frame = requestAnimationFrame(update); };
+    const resize = new ResizeObserver(measure);
+    rails.forEach(rail => resize.observe(rail));
+    window.addEventListener("scroll", schedule, { passive: true });
+    frame = requestAnimationFrame(measure);
+    return () => {
+        disposed = true;
+        if (frame !== null) cancelAnimationFrame(frame);
+        resize.disconnect();
+        window.removeEventListener("scroll", schedule);
+        states.forEach(state => { state.target.classList.remove("finite-reader-rail"); state.blocks.forEach(child => { child.removeAttribute("style"); child.removeAttribute("aria-hidden"); }); });
+    };
 }
 
 function refreshReaderRails(containers) {
-    requestAnimationFrame(() => {
-        cycleReaderRail(containers.left);
-        cycleReaderRail(containers.right);
-    });
+    return createFiniteRailSession(containers);
 }
 
 export async function renderBlocksIntoContainers(options = {}) {
@@ -213,7 +265,8 @@ export async function renderBlocksIntoContainers(options = {}) {
         itemsForPlacement(config, placement),
         page
     )));
-    if (page === "reader") refreshReaderRails(containers);
+    if (page === "reader") return refreshReaderRails(containers);
+    return null;
 }
 
 export class Blocks {
@@ -226,6 +279,6 @@ export class Blocks {
             return;
         }
 
-        await renderBlocksIntoContainers(options);
+        return renderBlocksIntoContainers(options);
     }
 }
