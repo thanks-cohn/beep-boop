@@ -1,17 +1,18 @@
 import { normalize } from "../utils/normalize.js";
+import { fetchJsonWithRetry } from "../utils/retry.js";
 
 const SEARCH_INDEX_URL = "/data/search.index.json";
 let searchIndexPromise = null;
 
 function loadSearchIndex() {
     if (!searchIndexPromise) {
-        searchIndexPromise = fetch(SEARCH_INDEX_URL, {
-            cache: "no-store",
+        searchIndexPromise = fetchJsonWithRetry(SEARCH_INDEX_URL, {
+            fetchOptions: { cache: "no-store" },
+            retries: 6,
+            baseDelay: 300,
+            maxDelay: 8000,
+            dedupeKey: "search-index"
         })
-            .then(response => {
-                if (!response.ok) throw new Error(`Search index failed: ${response.status}`);
-                return response.json();
-            })
             .then(data => data.entries || []);
     }
 

@@ -4,10 +4,10 @@ const IMAGE_PATTERN = /\.(avif|bmp|gif|jpe?g|png|svg|webp)(\?.*)?$/i;
 const HTML_PATTERN = /\.html?(\?.*)?$/i;
 const PLACEMENTS = ["left", "center", "right"];
 
+import { fetchTextWithRetry } from "../utils/retry.js";
+
 async function loadText(path) {
-    const response = await fetch(path);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return response.text();
+    return fetchTextWithRetry(path, { retries: 6, baseDelay: 250, maxDelay: 6000 });
 }
 
 function normalizeBlock(item) {
@@ -120,7 +120,7 @@ async function renderBlock(target, rawItem) {
             iframe.loading = "lazy";
             if (item.width) iframe.width = item.width;
             if (item.height) iframe.height = item.height;
-            element.appendChild(iframe);
+            wrapIframe(element, iframe);
             target.appendChild(element);
         } else if (item.title || item.body || item.text || item.content) {
             target.appendChild(textBlock(item));
@@ -186,6 +186,9 @@ export async function renderBlocksIntoContainers(options = {}) {
     )));
 }
 
+
+import { enhanceRail, wrapExistingIframes, wrapIframe } from "./rail.js";
+
 export class Blocks {
     static async start(options = {}) {
         if (Object.keys(options).length === 0) {
@@ -193,9 +196,12 @@ export class Blocks {
             if (!root) return;
             createLandingBlockShell(root);
             await renderBlocksIntoContainers({ page: "landing" });
-            return;
+            const cleanups = [enhanceRail(document.getElementById("blocks-left")), enhanceRail(document.getElementById("blocks-right"))].filter(Boolean);
+            return () => cleanups.forEach(cleanup => cleanup());
         }
 
         await renderBlocksIntoContainers(options);
+        const cleanups = [enhanceRail(optionContainer(options, "left", null)), enhanceRail(optionContainer(options, "right", null))].filter(Boolean);
+        return () => cleanups.forEach(cleanup => cleanup());
     }
 }
