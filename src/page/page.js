@@ -2,7 +2,7 @@ import { Landing } from "./landing.js";
 import { Reader } from "./reader.js";
 import { Account } from "../account.js";
 import { createRouteLifecycle } from "../route-lifecycle.js";
-import { setDiagnosticRoute } from "../diagnostics.js";
+import { diagnosticCount, setDiagnosticRoute } from "../diagnostics.js";
 
 const lifecycle = createRouteLifecycle();
 function disposeRoute() { Account.dispose?.(); Reader.dispose?.(); Landing.dispose?.(); }
@@ -11,6 +11,7 @@ export const RouteLifecycle = lifecycle;
 export class Page {
 
     static async start() {
+        diagnosticCount("page.start");
 
         const params = new URLSearchParams(window.location.search);
 
@@ -26,7 +27,7 @@ export class Page {
         if (account) {
             const context = lifecycle.next(`account:${account}`, disposeRoute);
             setDiagnosticRoute({ name: "account", account, generation: context.generation });
-            await Account.render(context);
+            Account.render(context);
             return;
         }
 

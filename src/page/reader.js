@@ -7,7 +7,7 @@ import { Search } from "../components/search.js";
 import { mountDiscussion } from "../discussion/discussion.js";
 import { loadReaderState, restoreScrollPosition, saveReaderState } from "../recovery/state.js";
 import { navigate } from "../navigation.js";
-import { getBookmarkState, toggleBookmark, normalizeBookmarkId } from "../bookmark-service.js";
+import { getBookmarkState, toggleBookmark, normalizeBookmarkId } from "../bookmark-db.js";
 import { snapshotDiagnostics, diagnosticTrack, diagnosticTiming } from "../diagnostics.js";
 
 // At most WINDOW_BEFORE + the active page + WINDOW_AFTER images are retained.
