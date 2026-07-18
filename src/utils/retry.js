@@ -31,7 +31,7 @@ export async function withRetry(operation, options = {}) {
             return await operation({ attempt, retries });
         } catch (error) {
             lastError = error;
-            if (attempt >= retries || options.signal?.aborted) break;
+            if (error?.retryable === false || attempt >= retries || options.signal?.aborted) break;
             options.onRetry?.({ attempt: attempt + 1, retries, error });
             await sleep(retryDelay(attempt + 1, options), options.signal);
         }
@@ -44,7 +44,12 @@ export async function fetchWithRetry(url, fetchOptions = {}, retryOptions = {}) 
     const { parse = null, ...rest } = retryOptions;
     return withRetry(async () => {
         const response = await fetch(url, fetchOptions);
-        if (!response.ok) throw new Error(`HTTP ${response.status} loading ${url}`);
+        if (!response.ok) {
+            const error = new Error(`HTTP ${response.status} loading ${url}`);
+            error.status = response.status;
+            if (response.status >= 400 && response.status < 500 && response.status !== 408 && response.status !== 429) error.retryable = false;
+            throw error;
+        }
         if (parse === "json") return response.json();
         if (parse === "text") return response.text();
         return response;
