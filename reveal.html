@@ -26,21 +26,37 @@
     </style>
     <script>
         (() => {
-            const fail = () => {
-                const shell = document.querySelector(".startup-shell");
-                if (!shell) return;
-                shell.classList.add("startup-shell-error");
-                shell.setAttribute("aria-busy", "false");
-                shell.innerHTML = '<div><strong>Still connecting…</strong><br><span>We will keep trying quietly. You can also try again.</span><br><button type="button" onclick="location.reload()">Try Again</button></div>';
+            const KEY = "dokuDoujinStartupRecoveryAttempts";
+            const LIMIT = 10;
+            const delays = [0, 500, 1000, 2000, 4000, 8000, 12000, 16000, 20000, 30000];
+            let timer = 0;
+            const shell = () => document.querySelector(".startup-shell");
+            const setText = text => { const status = shell()?.querySelector(".startup-status"); if (status) status.textContent = text; };
+            const showAssisted = () => {
+                const node = shell();
+                if (!node) return;
+                node.classList.add("startup-shell-error");
+                node.setAttribute("aria-busy", "false");
+                node.innerHTML = '<div><strong>Doku-Doujin is still reconnecting.</strong><br><span>You can keep this page open—we’ll continue trying automatically.</span><br><button type="button" data-startup-try>Try Again</button><button type="button" data-startup-refresh>Refresh Page</button></div>';
+                node.querySelector("[data-startup-try]")?.addEventListener("click", () => location.reload());
+                node.querySelector("[data-startup-refresh]")?.addEventListener("click", () => { sessionStorage.removeItem(KEY); location.reload(); });
             };
-            const resourceError = event => {
-                if (event.target?.tagName === "SCRIPT") fail();
+            const recover = () => {
+                const attempts = Number(sessionStorage.getItem(KEY) || "0");
+                if (attempts >= LIMIT) { showAssisted(); return; }
+                sessionStorage.setItem(KEY, String(attempts + 1));
+                setText(attempts >= 3 ? "Reconnecting…" : "Opening…");
+                clearTimeout(timer);
+                timer = setTimeout(() => location.reload(), delays[attempts] || 30000);
             };
+            const resourceError = event => { if (event.target?.tagName === "SCRIPT") recover(); };
             window.addEventListener("error", resourceError, true);
-            window.addEventListener("unhandledrejection", fail);
+            window.addEventListener("unhandledrejection", recover);
             window.__finishStartup = () => {
+                clearTimeout(timer);
+                sessionStorage.removeItem(KEY);
                 window.removeEventListener("error", resourceError, true);
-                window.removeEventListener("unhandledrejection", fail);
+                window.removeEventListener("unhandledrejection", recover);
                 delete window.__finishStartup;
             };
         })();
@@ -74,7 +90,7 @@
 
                 <div id="reader-container">
                     <div class="startup-shell" role="status" aria-live="polite" aria-busy="true">
-                        <span>Doku-Doujin</span>
+                        <span>Doku-Doujin</span><br><span class="startup-status">Opening…</span>
                     </div>
 
                 </div>

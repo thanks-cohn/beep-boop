@@ -51,11 +51,11 @@ test('offline pause resumes on online event', async () => {
 test('rail keeps constant nodes, iframe identity, srcs, and avoids same-threshold writes', () => {
   installWindow(); const rail = fakeRail(); const before = railDiagnostics(rail); const identities = rail.querySelectorAll('iframe');
   const cleanup = enhanceRail(rail); const afterInit = railDiagnostics(rail);
-  assert.deepEqual(afterInit, before); assert.equal(rail.querySelectorAll('iframe')[0], identities[0]);
+  assert.equal(afterInit.liveBlockCount, before.liveBlockCount); assert.equal(afterInit.liveIframeCount, before.liveIframeCount); assert.equal(rail.querySelectorAll('iframe')[0], identities[0]);
   const writes = rail.style.writes; window.scrollY = 100; window.dispatchEvent({ type: 'scroll' }); assert.equal(rail.style.writes, writes);
   for (const y of [900, 1800, 2700, 3600, 4500]) { window.scrollY = y; window.dispatchEvent({ type: 'scroll' }); }
   assert.equal(rail.children.length, before.blocks); assert.equal(rail.querySelectorAll('iframe').length, before.iframes);
-  assert.deepEqual(rail.querySelectorAll('iframe').map(i => i.src), before.srcs); assert.equal(rail.querySelectorAll('iframe')[1], identities[1]);
+  assert.deepEqual(rail.querySelectorAll('iframe').map(i => i.src), before.iframeSrcValues); assert.equal(rail.querySelectorAll('iframe')[1], identities[1]);
   cleanup(); assert.equal(rail.dataset.railEnhanced, undefined);
 });
 

@@ -233,17 +233,22 @@ function createVirtualReader(wrapper, manifest, session) {
         };
         img.onerror = () => {
             if (session.disposed || page.image !== img) return;
-            unload(page);
             page.failed = true;
             page.element.classList.add("reader-page-error");
-            page.error.hidden = false;
+            if ((page.retryAttempt || 0) >= 10) page.error.hidden = false;
             const attempt = (page.retryAttempt || 0) + 1;
             page.retryAttempt = attempt;
-            const delay = retryDelay(attempt, { baseDelay: 600, maxDelay: 12000 });
+            const delay = retryDelay(Math.min(attempt + 1, 10), { maxDelay: 30000 });
             page.retryTimer = setTimeout(() => {
                 session.timers.delete(page.retryTimer);
                 page.retryTimer = null;
                 if (session.disposed || !page.failed) return;
+                if (navigator.onLine === false) {
+                    const resume = () => { window.removeEventListener("online", resume); if (!session.disposed && page.failed) retry(); };
+                    window.addEventListener("online", resume, { once: true });
+                    session.cleanups.push(() => window.removeEventListener("online", resume));
+                    return;
+                }
                 retry();
             }, delay);
             session.timers.add(page.retryTimer);
@@ -271,7 +276,7 @@ function createVirtualReader(wrapper, manifest, session) {
         const error = document.createElement("button");
         error.type = "button";
         error.className = "reader-page-retry";
-        error.textContent = `Page ${index + 1} failed to load — tap to retry`;
+        error.textContent = `Page ${index + 1} is still reconnecting — tap to try again`;
         error.hidden = true;
         const page = { index, element, error, image: null, failed: false, ratio: null, url: pageUrl(index) };
         const retry = () => {
@@ -280,7 +285,8 @@ function createVirtualReader(wrapper, manifest, session) {
             page.failed = false;
             error.hidden = true;
             element.classList.remove("reader-page-error");
-            load(page);
+            if (page.image) page.image.src = page.url;
+            else load(page);
         };
         page.retry = retry;
         error.addEventListener("click", retry);
@@ -411,7 +417,7 @@ async function renderManifestInto(root, manifestUrl, source, work, chapter) {
     let manifest;
     try {
         session.retrySession = createRetrySession();
-        manifest = await fetchJsonWithRetry(manifestUrl, { session: session.retrySession, retries: 8, baseDelay: 300, maxDelay: 8000 });
+        manifest = await fetchJsonWithRetry(manifestUrl, { session: session.retrySession, retries: 10, maxDelay: 30000, dedupeKey: `reader-manifest:${manifestUrl}` });
     } catch (error) {
         if (session.disposed) return;
         throw error;

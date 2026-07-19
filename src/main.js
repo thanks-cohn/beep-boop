@@ -15,11 +15,10 @@ async function boot() {
 
         const container = document.getElementById("reader-container");
 
-        if (container) {
+        if (container && !container.childElementCount) {
             container.innerHTML = `
-                <div class="reader-error">
-                    <h2>Unable to load page.</h2>
-                    <p>Please try again later.</p>
+                <div class="startup-shell" role="status" aria-live="polite" aria-busy="true">
+                    <span>Doku-Doujin</span><br><span class="startup-status">Reconnecting…</span>
                 </div>
             `;
         }
@@ -31,7 +30,7 @@ async function boot() {
 boot().catch(error => {
     console.error("Unexpected startup failure.", error);
     const container = document.getElementById("reader-container");
-    if (container) container.innerHTML = `<div class="reader-error"><h2>Unable to load page.</h2><p>Please reload and try again.</p></div>`;
+    if (container && !container.childElementCount) container.innerHTML = `<div class="startup-shell" role="status" aria-live="polite" aria-busy="true"><span>Doku-Doujin</span><br><span class="startup-status">Reconnecting…</span></div>`;
     document.documentElement.dataset.appState = "error";
     window.__finishStartup?.();
 });
