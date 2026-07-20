@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "slug": "dummy",
+  "display": "dummy ダミー",
+  "source": "e",
+  "thumb": "https://cdn.animeplex.lol/works/dummy/chapter_1/thumb.webp",
+  "chapters": [
+    "chapter_1"
+  ],
+  "details": "https://cdn.animeplex.lol/works/dummy/chapter_1/details.json",
+  "archive": "https://cdn.animeplex.lol/works/dummy/chapter_1/dummy_ダミー.zip",
+  "parent_work_id": 5638853438
+}

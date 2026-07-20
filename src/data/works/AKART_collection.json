@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "slug": "AKART_collection",
+  "display": "AKART collection",
+  "source": "e",
+  "thumb": "https://cdn.animeplex.lol/works/AKART_collection/chapter_1/thumb.webp",
+  "chapters": [
+    "chapter_1"
+  ],
+  "details": "https://cdn.animeplex.lol/works/AKART_collection/chapter_1/details.json",
+  "archive": "https://cdn.animeplex.lol/works/AKART_collection/chapter_1/AKART collection.zip",
+  "parent_work_id": 4665482670
+}

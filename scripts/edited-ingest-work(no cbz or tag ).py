@@ -33,7 +33,6 @@ DEFAULT_TOKEN_ENV = "GITHUB_TOKEN"
 DEFAULT_THUMB_LOCATION = "first-chapter"
 DEFAULT_DETAILS_FILENAME = "details.json"
 HASH_CHUNK_SIZE = 4 * 1024 * 1024
-LINUX_TAG_XATTR = "user.xdg.tags"
 
 HARDCODED_GITHUB_TOKEN = ""
 HARDCODED_R2_REMOTE_NAME = "animeplex.lol"
@@ -560,7 +559,6 @@ def build_details(
     manifest: dict[str, Any],
     chapters: list[Chapter],
     args: argparse.Namespace,
-    tag_sources: dict[str, list[str]],
 ) -> dict[str, Any]:
     archive_path = spec.original_input if spec.original_input and is_supported_archive(spec.original_input) else None
     archive = None
@@ -600,7 +598,6 @@ def build_details(
         "display": spec.display,
         "parent_work_id": spec.parent_work_id,
         "tags": normalize_tags(manifest.get("tags")),
-        "tag_sources": tag_sources,
         "public": manifest.get("public") is not False,
         "chapters": chapter_details,
         "page_tree_sha256": hashlib.sha256(page_tree_bytes).hexdigest(),
@@ -624,7 +621,6 @@ def build_details(
             "details": companion_rel(DEFAULT_DETAILS_FILENAME, chapters, args.thumb_location),
             "archive": companion_rel(archive_name, chapters, args.thumb_location) if archive_name else None,
         },
-        "tag_sources": tag_sources,
         "content": {
             "chapter_count": len(chapters),
             "page_count": sum(chapter.pages for chapter in chapters),
@@ -689,29 +685,6 @@ def parse_tags_arg(value: str | None) -> list[str] | None:
     if value is None or value == "":
         return None
     return normalize_tags(value.split(","))
-
-
-def merge_tags(*groups: Any) -> list[str]:
-    merged: list[Any] = []
-    for group in groups:
-        if isinstance(group, (list, tuple, set)):
-            merged.extend(group)
-    return normalize_tags(merged)
-
-
-def read_linux_file_tags(path: Path | None) -> list[str]:
-    """Read Dolphin/KDE-compatible tags from a file or directory xattr."""
-    if path is None or not path.exists():
-        return []
-    try:
-        raw = os.getxattr(path, LINUX_TAG_XATTR)
-    except (AttributeError, OSError):
-        return []
-    try:
-        value = raw.decode("utf-8")
-    except UnicodeDecodeError:
-        value = raw.decode("utf-8", errors="replace")
-    return normalize_tags(value.rstrip("\x00").split(","))
 
 
 def apply_metadata_options(manifest: dict[str, Any], args: argparse.Namespace) -> dict[str, Any]:
@@ -1022,13 +995,6 @@ def ingest_one_work(spec: WorkSpec, args: argparse.Namespace) -> tuple[dict[str,
         write_json(ch.path / "item.json", item, args.dry_run)
 
     existing_manifest = load_json(data / "works" / f"{spec.slug}.json", {})
-    existing_tags = normalize_tags(existing_manifest.get("tags")) if isinstance(existing_manifest, dict) else []
-    manual_tags = parse_tags_arg(getattr(args, "tags", None))
-    linux_tags: list[str] = []
-    if getattr(args, "import_linux_tags", True) and not getattr(args, "clear_tags", False):
-        linux_tags = read_linux_file_tags(spec.original_input)
-        if linux_tags:
-            print(f"Linux file tags imported from {spec.original_input.name}: {linux_tags}")
     manifest = {
         **(existing_manifest if isinstance(existing_manifest, dict) else {}),
         "version": 1,
@@ -1043,8 +1009,6 @@ def ingest_one_work(spec: WorkSpec, args: argparse.Namespace) -> tuple[dict[str,
     if spec.original_input and is_supported_archive(spec.original_input) and args.upload_zip:
         manifest["archive"] = f"{args.cdn_base.rstrip('/')}/{spec.slug}/{companion_rel(spec.original_input.name, chapters, args.thumb_location)}"
     manifest = apply_metadata_options(manifest, args)
-    if linux_tags:
-        manifest["tags"] = merge_tags(manifest.get("tags"), linux_tags)
     if spec.parent_work_id is not None:
         manifest["parent_work_id"] = spec.parent_work_id
     manifest_path = data / "works" / f"{spec.slug}.json"
@@ -1061,16 +1025,7 @@ def ingest_one_work(spec: WorkSpec, args: argparse.Namespace) -> tuple[dict[str,
 
     details = None
     if args.generate_details:
-        tag_sources: dict[str, list[str]] = {}
-        if not getattr(args, "clear_tags", False):
-            if manual_tags is not None:
-                if manual_tags:
-                    tag_sources["manual"] = manual_tags
-            elif existing_tags:
-                tag_sources["existing_manifest"] = existing_tags
-            if linux_tags:
-                tag_sources["linux_xattr"] = linux_tags
-        details = build_details(spec, manifest, chapters, args, tag_sources)
+        details = build_details(spec, manifest, chapters, args)
         details_path = companion_path(spec.root, DEFAULT_DETAILS_FILENAME, chapters, args.thumb_location)
         write_json(details_path, details, args.dry_run)
         print(f"details: {details_path}")
@@ -1117,10 +1072,6 @@ def main() -> None:
     tag_group = ap.add_mutually_exclusive_group()
     tag_group.add_argument("--tags", help="Comma-separated normalized visibility tags. Empty string preserves existing tags.")
     tag_group.add_argument("--clear-tags", action="store_true", help="Explicitly clear all visibility tags.")
-    linux_tag_group = ap.add_mutually_exclusive_group()
-    linux_tag_group.add_argument("--import-linux-tags", dest="import_linux_tags", action="store_true", help="Import Dolphin/KDE user.xdg.tags from each input ZIP or work folder (default).")
-    linux_tag_group.add_argument("--no-import-linux-tags", dest="import_linux_tags", action="store_false", help="Do not import Dolphin/KDE filesystem tags.")
-    ap.set_defaults(import_linux_tags=True)
     public_group = ap.add_mutually_exclusive_group()
     public_group.add_argument("--public", action="store_true", help="Mark eligible for public rotunda presentation; not access control.")
     public_group.add_argument("--private", action="store_true", help="Hide from rotunda presentation only; search and reader URLs remain valid.")
@@ -1178,7 +1129,6 @@ def main() -> None:
         args.multi = mode.strip() == "2"
         folder_prompt = "Where is the parent folder containing work folders?" if args.multi else "Where is the curated work folder?"
         args.folder = ask(folder_prompt, "~/works")
-        args.import_linux_tags = ask_bool("Import Dolphin/Linux tags from each input file or work folder?", True)
 
         data_dir = Path(args.repo_data)
         if not args.multi:
