@@ -60,6 +60,8 @@ class WorkSpec:
     original_input: Path | None = None
     extraction_dir: Path | None = None
     temporary_extraction: bool = False
+    tags: list[str] | None = None
+    public: bool | None = None
 
 
 
@@ -444,8 +446,8 @@ def generate_thumb(work_root: Path, chapters: list[Chapter], quality: int, dry: 
     return thumb
 
 
-def pointer(slug: str, display: str, source: str, cdn: str, chapters: list[Chapter], thumb_location: str) -> dict[str, Any]:
-    return {"slug": slug, "display": display, "source": source, "manifest": f"works/{slug}.json", "thumb": thumb_url(cdn, slug, chapters, thumb_location)}
+def pointer(slug: str, display: str, source: str, cdn: str, chapters: list[Chapter], thumb_location: str, tags: list[str] | None = None, public: bool | None = True) -> dict[str, Any]:
+    return {"slug": slug, "display": display, "source": source, "manifest": f"works/{slug}.json", "thumb": thumb_url(cdn, slug, chapters, thumb_location), "tags": normalize_tags(tags), "public": public is not False}
 
 
 def upsert_pointer(path: Path, entry: dict[str, Any], dry: bool) -> None:
@@ -555,13 +557,30 @@ def existing_parent_work_id(data_dir: Path, slug: str) -> int | None:
     return None
 
 
-def make_work_spec(root: Path, data_dir: Path, slug: str | None = None, display: str | None = None, parent_work_id: int | None = None, auto_id: bool = False) -> WorkSpec:
+def normalize_tags(tags: str | list[str] | None) -> list[str]:
+    raw = tags.split(",") if isinstance(tags, str) else (tags or [])
+    out = []
+    seen = set()
+    for tag in raw:
+        value = str(tag).strip().lower()
+        if value and value not in seen:
+            seen.add(value); out.append(value)
+    return out
+
+def existing_work_metadata(data_dir: Path, slug: str) -> dict[str, Any]:
+    manifest = load_json(data_dir / "works" / f"{slug}.json", {})
+    return manifest if isinstance(manifest, dict) else {}
+
+def make_work_spec(root: Path, data_dir: Path, slug: str | None = None, display: str | None = None, parent_work_id: int | None = None, auto_id: bool = False, tags: str | list[str] | None = None, public: bool | None = None) -> WorkSpec:
     real_slug = slug or slugify_name(root.name)
     real_display = display or display_from_folder_name(root.name)
     real_parent = parent_work_id
     if auto_id and real_parent is None:
         real_parent = existing_parent_work_id(data_dir, real_slug) or deterministic_parent_work_id(real_slug)
-    return WorkSpec(root=root, slug=real_slug, display=real_display, parent_work_id=real_parent)
+    existing = existing_work_metadata(data_dir, real_slug)
+    real_tags = normalize_tags(tags if tags is not None else existing.get("tags", []))
+    real_public = public if public is not None else (False if existing.get("public") is False else True)
+    return WorkSpec(root=root, slug=real_slug, display=real_display, parent_work_id=real_parent, tags=real_tags, public=real_public)
 
 
 def ingest_one_work(spec: WorkSpec, args: argparse.Namespace) -> tuple[dict[str, Any], list[Path], list[Chapter]]:
@@ -613,6 +632,8 @@ def ingest_one_work(spec: WorkSpec, args: argparse.Namespace) -> tuple[dict[str,
         "source": args.source,
         "thumb": thumb_url(args.cdn_base, spec.slug, chapters, args.thumb_location),
         "chapters": [c.rel for c in chapters],
+        "tags": normalize_tags(spec.tags),
+        "public": spec.public is not False,
     }
     if spec.parent_work_id is not None:
         manifest["parent_work_id"] = spec.parent_work_id
@@ -620,7 +641,7 @@ def ingest_one_work(spec: WorkSpec, args: argparse.Namespace) -> tuple[dict[str,
     write_json(manifest_path, manifest, args.dry_run)
     written.append(manifest_path)
 
-    ent = pointer(spec.slug, spec.display, args.source, args.cdn_base, chapters, args.thumb_location)
+    ent = pointer(spec.slug, spec.display, args.source, args.cdn_base, chapters, args.thumb_location, spec.tags, spec.public)
     if args.update_fetch and not args.no_fetch_update:
         upsert_pointer(data / "fetch.json", ent, args.dry_run)
         written.append(data / "fetch.json")
@@ -650,6 +671,9 @@ def main() -> None:
     ap.add_argument("--multi", action="store_true", help="Treat folder as a parent containing many work folders.")
     ap.add_argument("--slug")
     ap.add_argument("--display")
+    ap.add_argument("--tags", help="Comma-separated canonical tags; omitted preserves existing tags.")
+    ap.add_argument("--public", dest="public", action="store_true", default=None, help="Make the work eligible for rotunda policy filtering.")
+    ap.add_argument("--private", dest="public", action="store_false", help="Hide the work from the rotunda only; direct reading and search remain available.")
     ap.add_argument("--source", default="e")
     ap.add_argument("--parent-work-id", type=int)
     ap.add_argument("--auto-parent-work-id", action="store_true", help="Generate/reuse parent_work_id automatically. Deterministic IDs use SHA-256 of the normalized slug; capitalization and slug spelling affect the ID.")
@@ -712,6 +736,8 @@ def main() -> None:
             args.slug = ask("Work slug?", suggested_slug)
             suggested_display = display_from_folder_name(folder_name)
             args.display = ask("Display title?", suggested_display)
+            args.tags = ask("Tags (comma-separated; blank keeps none/existing)?", "")
+            args.public = ask_bool("Allow this work to be eligible for the rotunda?", False)
             p = ask("Parent work id?", "")
             args.parent_work_id = int(p) if p else None
         else:
@@ -732,7 +758,7 @@ def main() -> None:
         args.generate_thumb = ask_bool("Generate thumb.webp?", True)
         args.thumb_location = DEFAULT_THUMB_LOCATION
         args.update_fetch = ask_bool("Update fetch.json?", True)
-        args.update_rotunda = ask_bool("Update rotunda.json?", True)
+        args.update_rotunda = ask_bool("Update bounded rotunda candidate feed (rotunda.json)?", False)
         args.generate_search = ask_bool("Regenerate search.index.json?", True)
 
         if ask_bool("Upload to R2/CDN?", False):
@@ -775,7 +801,7 @@ def main() -> None:
             for p in paths:
                 slug_src = p.stem if is_supported_archive(p) else p.name
                 prepared, exdir, temp = prepare_work_root(p, args, slug_src)
-                prepared_specs.append(make_work_spec(prepared, data, slugify_name(slug_src), display_from_folder_name(slug_src), auto_id=True))
+                prepared_specs.append(make_work_spec(prepared, data, slugify_name(slug_src), display_from_folder_name(slug_src), auto_id=True, tags=args.tags, public=args.public))
                 prepared_specs[-1].original_input = p
                 prepared_specs[-1].extraction_dir = exdir
                 prepared_specs[-1].temporary_extraction = temp
@@ -783,7 +809,7 @@ def main() -> None:
         else:
             slug_src = args.slug or (root.stem if is_supported_archive(root) else root.name)
             prepared, exdir, temp = prepare_work_root(root, args, slug_src)
-            specs = [make_work_spec(prepared, data, args.slug or slugify_name(slug_src), args.display or display_from_folder_name(slug_src), args.parent_work_id, args.auto_parent_work_id)]
+            specs = [make_work_spec(prepared, data, args.slug or slugify_name(slug_src), args.display or display_from_folder_name(slug_src), args.parent_work_id, args.auto_parent_work_id, args.tags, args.public)]
             specs[0].original_input = root
             specs[0].extraction_dir = exdir
             specs[0].temporary_extraction = temp

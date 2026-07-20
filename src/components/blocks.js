@@ -80,6 +80,29 @@ function imageBlock(item) {
     return element;
 }
 
+function adPairBlock(item) {
+    const element = block("embed-block rail-ad-block", item);
+    const wrap = document.createElement("div");
+    wrap.className = "rail-ad-pair";
+    const count = Math.max(1, Math.min(Number(item.count) || 1, 2));
+    for (let i = 0; i < count; i += 1) {
+        const iframe = document.createElement("iframe");
+        iframe.className = "rail-ad-frame";
+        iframe.src = item.src;
+        iframe.title = item.title || "Rail sponsorship";
+        iframe.width = item.width || 160;
+        iframe.height = item.height || 600;
+        iframe.loading = "lazy";
+        iframe.scrolling = "no";
+        iframe.marginWidth = "0";
+        iframe.marginHeight = "0";
+        iframe.frameBorder = "0";
+        wrap.appendChild(iframe);
+    }
+    element.appendChild(wrap);
+    return element;
+}
+
 function textBlock(item) {
     const element = block("text-block", item);
     if (item.title) {
@@ -103,7 +126,9 @@ async function renderBlock(target, rawItem) {
     if (!item) return;
 
     try {
-        if (item.html) {
+        if (item.type === "ad-pair") {
+            target.appendChild(adPairBlock(item));
+        } else if (item.html) {
             appendHtml(target, await loadText(item.html));
         } else if (item.image || item.src || IMAGE_PATTERN.test(item.url || "")) {
             target.appendChild(imageBlock(item));

@@ -2,6 +2,7 @@ import { Storage } from "../storage/storage.js";
 import { resolveManifest } from "../storage/manifest_resolver.js";
 import { loadWork } from "../storage/work_manifest.js";
 import rotunda from "../data/rotunda.json";
+import { isRotundaEligible, loadVisibilityPolicy, normalizeWorkMetadata } from "../data/visibility.js";
 import storage from "../data/storage.json";
 import { ROTUNDA_MAX_MOUNTED, rotundaWindow } from "./rotunda_window.js";
 import "../styles/rotunda.css";
@@ -105,7 +106,9 @@ export class Rotunda {
 
         const environment = storage.active;
         const sources = storage[environment]?.sources ?? {};
-        const works = rotunda.works ?? [];
+        const policy = await loadVisibilityPolicy();
+        const allCandidates = Array.isArray(rotunda.works) ? rotunda.works : (Array.isArray(rotunda) ? rotunda : []);
+        const works = allCandidates.map(normalizeWorkMetadata).filter(work => isRotundaEligible(work, policy));
         const defaultSource = rotunda.default?.source || "e";
         const metadataCache = new LruCache(ROTUNDA_METADATA_CACHE_MAX);
         const thumbnailCache = new LruCache(ROTUNDA_THUMBNAIL_CACHE_MAX);
@@ -118,6 +121,17 @@ export class Rotunda {
         let touchStart = null;
         let touchMoved = false;
         const thumbnailStats = { started: 0, reused: 0, prevented: 0, stale: 0 };
+
+        if (!works.length) {
+            container.replaceChildren();
+            const empty = document.createElement("div");
+            empty.className = "rotunda-empty";
+            empty.setAttribute("role", "status");
+            empty.textContent = "No rotunda works are currently available.";
+            container.append(empty);
+            Rotunda.cleanup = () => { container.replaceChildren(); Rotunda.cleanup = null; };
+            return;
+        }
 
         const viewport = document.createElement("div");
         viewport.className = "rotunda-scroll-viewport";

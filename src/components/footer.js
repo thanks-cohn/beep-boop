@@ -4,27 +4,21 @@ export class Footer {
         if (!footer) return;
 
         footer.replaceChildren();
+        footer.className = "site-footer";
 
-        const left = document.createElement("div");
-        left.className = "site-footer-left";
-        left.textContent = "v1.2.0-wip";
-
-        const center = document.createElement("div");
-        center.className = "site-footer-center";
-        center.textContent = "Doku-Doujin";
-
-        const right = document.createElement("div");
-        right.className = "site-footer-right";
+        const brand = document.createElement("div");
+        brand.className = "site-footer-brand";
+        brand.textContent = "Doku-Doujin";
 
         const top = document.createElement("button");
+        top.className = "site-footer-top";
         top.type = "button";
         top.textContent = "Back to top";
         top.addEventListener("click", () => {
-            window.scrollTo({ top: 0, behavior: "smooth" });
+            const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+            window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
         });
 
-        right.appendChild(top);
-
-        footer.append(left, center, right);
+        footer.append(brand, top);
     }
 }
