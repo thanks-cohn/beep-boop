@@ -2,6 +2,8 @@ import { Storage } from "../storage/storage.js";
 import { resolveManifest } from "../storage/manifest_resolver.js";
 import { loadWork } from "../storage/work_manifest.js";
 import rotunda from "../data/rotunda.json";
+import { visibilityPolicyStore } from "./visibility_policy.js";
+import { filterRotundaCandidates } from "../utils/visibility.js";
 import storage from "../data/storage.json";
 import { ROTUNDA_MAX_MOUNTED, rotundaWindow } from "./rotunda_window.js";
 import "../styles/rotunda.css";
@@ -105,7 +107,8 @@ export class Rotunda {
 
         const environment = storage.active;
         const sources = storage[environment]?.sources ?? {};
-        const works = rotunda.works ?? [];
+        const rawWorks = rotunda.works ?? [];
+        let works = filterRotundaCandidates(rawWorks, await visibilityPolicyStore.refresh());
         const defaultSource = rotunda.default?.source || "e";
         const metadataCache = new LruCache(ROTUNDA_METADATA_CACHE_MAX);
         const thumbnailCache = new LruCache(ROTUNDA_THUMBNAIL_CACHE_MAX);
@@ -137,6 +140,17 @@ export class Rotunda {
         caption.append(titleViewport);
         viewport.append(track, caption, status);
         container.replaceChildren(viewport);
+
+        function renderEmptyState(message = "No rotunda works available.") {
+            track.replaceChildren();
+            mounted.clear();
+            updateCaption(null);
+            status.textContent = message;
+            const empty = document.createElement("p");
+            empty.className = "rotunda-empty-state";
+            empty.textContent = message;
+            track.append(empty);
+        }
 
         let captionMeasureFrame = 0;
         function measureCaption() {
@@ -312,6 +326,7 @@ export class Rotunda {
             const records = [...mounted.values()];
             return {
                 totalLogicalWorks: works.length,
+                totalCandidateWorks: rawWorks.length,
                 activeLogicalIndex: works.length ? ((absoluteActiveIndex % works.length) + works.length) % works.length : 0,
                 absoluteActiveIndex,
                 mountedDomCardCount: track.querySelectorAll(".rotunda-card").length,
@@ -370,6 +385,14 @@ export class Rotunda {
         }
 
         function render() {
+            if (!works.length) {
+                generation += 1;
+                renderController?.abort();
+                for (const record of mounted.values()) unmount(record);
+                mounted.clear();
+                renderEmptyState(rawWorks.length ? "No rotunda works match the current visibility policy." : "No rotunda works available.");
+                return;
+            }
             generation += 1;
             const localGeneration = generation;
             renderController?.abort();
@@ -480,6 +503,14 @@ export class Rotunda {
         };
         window.addEventListener("resize", resizeCaption, { passive: true });
 
+        const policyChange = event => {
+            works = filterRotundaCandidates(rawWorks, event.detail || visibilityPolicyStore.get());
+            absoluteActiveIndex = works.length ? ((absoluteActiveIndex % works.length) + works.length) % works.length : 0;
+            metadataCache.clear();
+            render();
+        };
+        visibilityPolicyStore.addEventListener("change", policyChange);
+
         if (import.meta.env.DEV) window.__rotundaDiagnostics = diagnostics;
         Rotunda.cleanup = () => {
             if (destroyed) return;
@@ -490,6 +521,7 @@ export class Rotunda {
             clearTimeout(resizeTimer);
             window.removeEventListener("keydown", keydown);
             window.removeEventListener("resize", resizeCaption);
+            visibilityPolicyStore.removeEventListener("change", policyChange);
             container.removeEventListener("pointerenter", pointerEnter);
             container.removeEventListener("pointerleave", pointerLeave);
             viewport.removeEventListener("pointerdown", pointerDown);

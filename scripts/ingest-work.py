@@ -449,16 +449,103 @@ def pointer(slug: str, display: str, source: str, cdn: str, chapters: list[Chapt
 
 
 def upsert_pointer(path: Path, entry: dict[str, Any], dry: bool) -> None:
+    upsert_pointer_merge(path, entry, dry, add=True)
+
+
+
+def normalize_tag(value: Any) -> str:
+    return re.sub(r"\s+", "-", str(value or "").strip().lower())
+
+
+def normalize_tags(values: Any) -> list[str]:
+    raw = values if isinstance(values, list) else []
+    out: list[str] = []
+    seen: set[str] = set()
+    for value in raw:
+        tag = normalize_tag(value)
+        if not tag or tag in seen:
+            continue
+        seen.add(tag)
+        out.append(tag)
+    return out
+
+
+def parse_tags_arg(value: str | None) -> list[str] | None:
+    if value is None or value == "":
+        return None
+    return normalize_tags(value.split(","))
+
+
+def apply_metadata_options(manifest: dict[str, Any], args: argparse.Namespace) -> dict[str, Any]:
+    next_manifest = dict(manifest)
+    current_tags = normalize_tags(next_manifest.get("tags"))
+    parsed_tags = parse_tags_arg(getattr(args, "tags", None))
+    if getattr(args, "clear_tags", False):
+        next_manifest["tags"] = []
+    elif parsed_tags is not None:
+        next_manifest["tags"] = parsed_tags
+    elif "tags" in next_manifest:
+        next_manifest["tags"] = current_tags
+
+    if getattr(args, "private", False):
+        next_manifest["public"] = False
+    elif getattr(args, "public", False):
+        next_manifest["public"] = True
+    elif "public" in next_manifest:
+        next_manifest["public"] = next_manifest.get("public") is not False
+    return next_manifest
+
+
+def derived_metadata(manifest: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "slug": manifest.get("slug"),
+        "display": manifest.get("display"),
+        "source": manifest.get("source"),
+        "manifest": f"works/{manifest.get('slug')}.json",
+        "thumb": manifest.get("thumb"),
+        "tags": normalize_tags(manifest.get("tags")),
+        "public": manifest.get("public") is not False,
+    }
+
+
+def upsert_pointer_merge(path: Path, entry: dict[str, Any], dry: bool, add: bool = True) -> bool:
     data = load_json(path, {"version": 2, "default": {}, "works": []})
     works = data.setdefault("works", [])
     for i, w in enumerate(works):
-        if isinstance(w, dict) and w.get("slug") == entry["slug"]:
-            works[i] = entry
-            break
-    else:
-        works.append(entry)
+        if isinstance(w, dict) and w.get("slug") == entry.get("slug"):
+            works[i] = {**w, **{k: v for k, v in entry.items() if v is not None}}
+            write_json(path, data, dry)
+            return True
+    if not add:
+        return False
+    works.append({k: v for k, v in entry.items() if v is not None})
     write_json(path, data, dry)
+    return True
 
+
+def metadata_only_update(args: argparse.Namespace) -> list[Path]:
+    if not args.slug:
+        raise SystemExit("--metadata-only requires --slug")
+    data = resolve_repo_path(args.repo_data)
+    manifest_path = data / "works" / f"{args.slug}.json"
+    manifest = load_json(manifest_path, None)
+    if not isinstance(manifest, dict):
+        raise SystemExit(f"Work manifest not found: {manifest_path}")
+    manifest = apply_metadata_options(manifest, args)
+    write_json(manifest_path, manifest, args.dry_run)
+    entry = derived_metadata(manifest)
+    written = [manifest_path]
+    if upsert_pointer_merge(data / "fetch.json", entry, args.dry_run, add=False):
+        written.append(data / "fetch.json")
+    if args.update_rotunda or any(isinstance(w, dict) and w.get("slug") == args.slug for w in load_json(data / "rotunda.json", {}).get("works", [])):
+        if upsert_pointer_merge(data / "rotunda.json", entry, args.dry_run, add=args.update_rotunda):
+            written.append(data / "rotunda.json")
+    print("Metadata-only update complete.")
+    print(f"- Slug: {manifest.get('slug')}")
+    print(f"- Tags: {normalize_tags(manifest.get('tags'))}")
+    print(f"- Public rotunda eligible: {manifest.get('public') is not False}")
+    print("No chapter images, upload remotes, or search generation were touched.")
+    return written
 
 def safe_cmd(cmd: list[str]) -> str:
     return " ".join(shlex.quote(part) for part in cmd)
@@ -606,7 +693,9 @@ def ingest_one_work(spec: WorkSpec, args: argparse.Namespace) -> tuple[dict[str,
             item["parent_work_id"] = spec.parent_work_id
         write_json(ch.path / "item.json", item, args.dry_run)
 
+    existing_manifest = load_json(data / "works" / f"{spec.slug}.json", {})
     manifest = {
+        **(existing_manifest if isinstance(existing_manifest, dict) else {}),
         "version": 1,
         "slug": spec.slug,
         "display": spec.display,
@@ -614,13 +703,14 @@ def ingest_one_work(spec: WorkSpec, args: argparse.Namespace) -> tuple[dict[str,
         "thumb": thumb_url(args.cdn_base, spec.slug, chapters, args.thumb_location),
         "chapters": [c.rel for c in chapters],
     }
+    manifest = apply_metadata_options(manifest, args)
     if spec.parent_work_id is not None:
         manifest["parent_work_id"] = spec.parent_work_id
     manifest_path = data / "works" / f"{spec.slug}.json"
     write_json(manifest_path, manifest, args.dry_run)
     written.append(manifest_path)
 
-    ent = pointer(spec.slug, spec.display, args.source, args.cdn_base, chapters, args.thumb_location)
+    ent = derived_metadata(manifest)
     if args.update_fetch and not args.no_fetch_update:
         upsert_pointer(data / "fetch.json", ent, args.dry_run)
         written.append(data / "fetch.json")
@@ -665,6 +755,13 @@ def main() -> None:
     ap.add_argument("--delete-originals", action="store_true")
     ap.add_argument("--update-fetch", action="store_true")
     ap.add_argument("--update-rotunda", action="store_true")
+    tag_group = ap.add_mutually_exclusive_group()
+    tag_group.add_argument("--tags", help="Comma-separated normalized visibility tags. Empty string preserves existing tags.")
+    tag_group.add_argument("--clear-tags", action="store_true", help="Explicitly clear all visibility tags.")
+    public_group = ap.add_mutually_exclusive_group()
+    public_group.add_argument("--public", action="store_true", help="Mark eligible for public rotunda presentation; not access control.")
+    public_group.add_argument("--private", action="store_true", help="Hide from rotunda presentation only; search and reader URLs remain valid.")
+    ap.add_argument("--metadata-only", action="store_true", help="Update manifest/pointer metadata without inspecting images, upload, or search generation.")
     ap.add_argument("--generate-search", action="store_true")
     ap.add_argument("--upload", choices=["rclone", "rsync"])
     ap.add_argument("--remote")
@@ -695,6 +792,10 @@ def main() -> None:
     ap.add_argument("--cleanup-extracted", action="store_true", help="Allow cleanup of user-specified extraction directory after completion.")
     args = ap.parse_args()
 
+    if args.metadata_only:
+        metadata_only_update(args)
+        return
+
     guided = not args.folder
     token_value: str | None = args.github_token
     upload_env: dict[str, str] | None = None
@@ -714,6 +815,18 @@ def main() -> None:
             args.display = ask("Display title?", suggested_display)
             p = ask("Parent work id?", "")
             args.parent_work_id = int(p) if p else None
+            existing = load_json(data_dir / "works" / f"{args.slug}.json", {})
+            print(f"Current tags: {normalize_tags(existing.get('tags')) if isinstance(existing, dict) else []}")
+            tag_choice = ask("Tags: keep, replace, or clear?", "keep").lower()
+            if tag_choice.startswith("r"):
+                args.tags = ask("Comma-separated tags", ",".join(normalize_tags(existing.get('tags')) if isinstance(existing, dict) else []))
+            elif tag_choice.startswith("c"):
+                args.clear_tags = True
+            current_public = (existing.get("public") is not False) if isinstance(existing, dict) else True
+            print(f"Current public rotunda eligibility: {current_public}")
+            public_choice = ask("Visibility: keep, public, or private?", "keep").lower()
+            if public_choice == "public": args.public = True
+            elif public_choice == "private": args.private = True
         else:
             print("Batch mode uses each immediate subfolder name as the display-name source and auto-generates/reuses parent_work_id.")
             args.auto_parent_work_id = True
@@ -732,7 +845,7 @@ def main() -> None:
         args.generate_thumb = ask_bool("Generate thumb.webp?", True)
         args.thumb_location = DEFAULT_THUMB_LOCATION
         args.update_fetch = ask_bool("Update fetch.json?", True)
-        args.update_rotunda = ask_bool("Update rotunda.json?", True)
+        args.update_rotunda = ask_bool("Update rotunda.json?", False)
         args.generate_search = ask_bool("Regenerate search.index.json?", True)
 
         if ask_bool("Upload to R2/CDN?", False):
@@ -855,7 +968,8 @@ def main() -> None:
         print(f"- {data / 'search.index.json'}")
         print(f"- {repo_root() / 'public' / 'data' / 'search.index.json'}")
     for spec, chapters in all_summaries:
-        print(f"- {spec.display}: {len(chapters)} chapters, {sum(c.pages for c in chapters)} pages, slug={spec.slug}")
+        manifest = load_json(data / "works" / f"{spec.slug}.json", {})
+        print(f"- {spec.display}: {len(chapters)} chapters, {sum(c.pages for c in chapters)} pages, slug={spec.slug}, public={manifest.get('public') is not False}")
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@ import blocksData from "../data/blocks.json";
 const IMAGE_PATTERN = /\.(avif|bmp|gif|jpe?g|png|svg|webp)(\?.*)?$/i;
 const HTML_PATTERN = /\.html?(\?.*)?$/i;
 const PLACEMENTS = ["left", "center", "right"];
+const activeSessions = new WeakMap();
 
 async function loadText(path) {
     const response = await fetch(path);
@@ -103,7 +104,26 @@ async function renderBlock(target, rawItem) {
     if (!item) return;
 
     try {
-        if (item.html) {
+        if (item.type === "rail-ad") {
+            const element = block("rail-ad-block", item);
+            const frame = document.createElement("div");
+            frame.className = "rail-ad-frame";
+            const iframe = document.createElement("iframe");
+            iframe.className = "block-iframe rail-ad-iframe";
+            iframe.src = item.src;
+            iframe.title = item.title || "Sponsored content";
+            iframe.width = item.width || 160;
+            iframe.height = item.height || 600;
+            iframe.loading = "lazy";
+            iframe.scrolling = "no";
+            iframe.setAttribute("frameborder", "0");
+            iframe.setAttribute("marginwidth", "0");
+            iframe.setAttribute("marginheight", "0");
+            iframe.style.border = "0";
+            frame.appendChild(iframe);
+            element.appendChild(frame);
+            target.appendChild(element);
+        } else if (item.html) {
             appendHtml(target, await loadText(item.html));
         } else if (item.image || item.src || IMAGE_PATTERN.test(item.url || "")) {
             target.appendChild(imageBlock(item));
@@ -118,6 +138,8 @@ async function renderBlock(target, rawItem) {
             iframe.src = item.iframe || item.page;
             iframe.title = item.title || "Embedded content";
             iframe.loading = "lazy";
+            iframe.scrolling = "no";
+            iframe.style.border = "0";
             if (item.width) iframe.width = item.width;
             if (item.height) iframe.height = item.height;
             element.appendChild(iframe);
@@ -138,9 +160,13 @@ async function buildBlock(rawItem) {
 
 async function renderBlocks(target, items = [], page = "landing") {
     if (!target) return;
+    activeSessions.get(target)?.();
     const filtered = items.filter(item => isEnabled(item, page));
     const rendered = await Promise.all(filtered.map(buildBlock));
     target.replaceChildren(...rendered);
+    const cleanup = () => target.replaceChildren();
+    activeSessions.set(target, cleanup);
+    return cleanup;
 }
 
 export function createLandingBlockShell(root) {
@@ -179,11 +205,12 @@ export async function renderBlocksIntoContainers(options = {}) {
         right: optionContainer(options, "right", "#blocks-right")
     };
 
-    await Promise.all(PLACEMENTS.map(placement => renderBlocks(
+    const cleanups = await Promise.all(PLACEMENTS.map(placement => renderBlocks(
         containers[placement],
         itemsForPlacement(config, placement),
         page
     )));
+    return () => cleanups.forEach(cleanup => cleanup?.());
 }
 
 export class Blocks {
@@ -192,10 +219,9 @@ export class Blocks {
             const root = document.getElementById("blocks-root");
             if (!root) return;
             createLandingBlockShell(root);
-            await renderBlocksIntoContainers({ page: "landing" });
-            return;
+            return renderBlocksIntoContainers({ page: "landing" });
         }
 
-        await renderBlocksIntoContainers(options);
+        return renderBlocksIntoContainers(options);
     }
 }
